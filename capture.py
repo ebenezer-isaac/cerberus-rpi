@@ -10,7 +10,7 @@ f.CmosLed(True)
 print 'Place the finger on the scanner to capture finger'
 fingerflag=f.IsPressFinger()[0]["Parameter"]
 while fingerflag!="""True""":
-	if fingerflag != 'NACK_FINGER_IS_NOT_PRESSED':
+	if fingerflag != '4114':
 		print 'Unknown Error occured', fingerflag
 	fingerflag=f.IsPressFinger()[0]["Parameter"]
 capture = f.CaptureFinger()
