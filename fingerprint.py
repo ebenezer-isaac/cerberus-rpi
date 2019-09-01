@@ -1,29 +1,74 @@
 import fingerpi as fp
-def printByteArray(arr):
-    return map(hex, list(arr))
 f = fp.FingerPi()
-f.Open(extra_info = True, check_baudrate = True)
-f.ChangeBaudrate(115200)
-f.CmosLed(True)
-f.CaptureFinger()
-f.CmosLed(False)
-response = f.GetImage()
-print response
-f.Close()
 
-#CheckEnrolled
-#EnrollStart
-#Enroll1
-#Enroll2
-#Enroll3
-#IsPressFinger
-#DeleteId
-#DeleteAll
-#Identify
-#VerifyTemplate
-#IdentifyTemplate
-#CaptureFinger
-#MakeTemplate
-#GetImage
-#GetRawImage
-#GetTemplate
+def Initialize_FPS():
+	response =f.Open(extra_info = True, check_baudrate = True)
+	f.ChangeBaudrate(115200)
+	return response[0]['ACK']
+def SetLED_FPS(state):
+	response = f.CmosLed(state)
+	return response[0]['ACK']
+def Terminate_FPS():
+	response = f.Close()
+	return response[0]['ACK']
+def SetBaudrate_FPS(baud):
+	response = f.ChangeBaudrate(int(baud))
+	return response[0]['ACK']
+def CountEnrolled_FPS():
+	response = f.GetEnrollCount()
+	return response[0]['Parameter']
+def CheckEnrolled_FPS(id):
+	response = f.CheckEnrolled(id)
+	if response[0]['Parameter']==0:
+		return True
+	else:
+		return False
+def IsPressFinger_FPS():
+	response = f.IsPressFinger()
+	if response[0]['Parameter']==0:
+		return True
+	else:
+		return False
+def DeleteId_FPS(id):
+	response = f.DeleteId(id)
+	if response[0]['Parameter']==0:
+		return True
+	else:
+		return False
+def Identify_FPS():
+	f.CaptureFinger(False)
+	response = f.Identify()
+	if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
+		response[0]['Parameter']='200'
+	return response[0]['Parameter']
+	
+#Below functions have not been tested
+def GetImage_FPS():
+	f.CaptureFinger(False)
+	response = f.GetImage()
+	return response[1]['Data']
+def GetTemplate_FPS(id):
+	response = f.GetTemplate(id)
+	return response[1]['Data']
+def EnrollStart_FPS(id):
+	response = f.EnrollStart(id)
+	return response[0]['ACK']
+def Enroll1_FPS():
+	response = f.Close()
+	return response[0]['ACK']
+def Enroll2_FPS():
+	response = f.Close()
+	return response[0]['ACK']
+def Enroll3_FPS():
+	response = f.Close()
+	return response[0]['ACK']
+def DeleteAll_FPS():
+	response = f.Close()
+	return response[0]['ACK']
+	
+#print Initialize_FPS()
+#print SetBaudrate_FPS(115200)
+#print SetLED_FPS(True)
+#print SetLED_FPS(False)
+#CountEnrolled_FPS()
+#print Terminate_FPS()
