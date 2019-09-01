@@ -8,10 +8,11 @@ f.Open(extra_info = True, check_baudrate = True)
 f.ChangeBaudrate(115200)
 print 'Place the finger on the scanner to capture finger'
 f.CmosLed(True)
-while f.IsPressFinger()[0]["Parameter"]=="""False""":
-	pass
-response = f.CaptureFinger()
-if response[0]['ACK']:
+fingerflag=f.IsPressFinger()[0]["Parameter"]
+while fingerflag=="""False""":
+	fingerflag=f.IsPressFinger()[0]["Parameter"]
+capture = f.CaptureFinger()
+if capture[0]['ACK']:
 	print 'Image has been captured'
 	print 'Fetching image'
 	raw_img = f.GetImage()
@@ -23,5 +24,4 @@ if response[0]['ACK']:
 		pickle.dump(raw_img, f)
 if response[0]['Parameter'] != 'NACK_FINGER_IS_NOT_PRESSED':
 	print 'Unknown Error occured', response[0]['Parameter']
-f.CmosLed(False)
 
