@@ -8,7 +8,7 @@ f.Open(extra_info = True, check_baudrate = True)
 f.ChangeBaudrate(115200)
 print 'Place the finger on the scanner to capture finger'
 f.CmosLed(True)
-if IsPressFinger()[0]["Parameter"]=="""True""":
+if f.IsPressFinger()[0]["Parameter"]=="""True""":
 	response = f.CaptureFinger()
 	if response[0]['ACK']:
 		print 'Image has been captured'
