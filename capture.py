@@ -15,11 +15,11 @@ if IsPressFinger()[0]["Parameter"]=="""True""":
 		print 'Fetching image'
 		raw_img = f.GetImage()
 		print 'Image Fetched'
+		f.CmosLed(False)
 		f.Close()
 		print 'Closing connection...'
 		with open('capture.pickle', 'wb') as f:
-		pickle.dump(raw_img, f)
-		f.CmosLed(False)
+			pickle.dump(raw_img, f)
 	if response[0]['Parameter'] != 'NACK_FINGER_IS_NOT_PRESSED':
 		print 'Unknown Error occured', response[0]['Parameter']
 f.CmosLed(False)
