@@ -1,26 +1,16 @@
 import fingerpi as fp
+def printByteArray(arr):
+    return map(hex, list(arr))
 f = fp.FingerPi()
+f.Open(extra_info = True, check_baudrate = True)
+f.ChangeBaudrate(115200)
+f.CmosLed(True)
+f.CaptureFinger()
+f.CmosLed(False)
+response = f.GetImage()
+print response
+f.Close()
 
-def Initialize_FPS():
-	response =f.Open(extra_info = True, check_baudrate = True)
-	return response[0]['ACK']
-def SetLED_FPS(state):
-	response = f.CmosLed(state)
-	return response[0]['ACK']
-def Terminate_FPS():
-	response = f.Close()
-	return response[0]['ACK']
-def SetBaudrate_FPS(baud):
-	response = f.ChangeBaudrate(int(baud))
-	return response[0]['ACK']
-def CountEnrolled_FPS():
-	print f.GetEnrollCount()
-print Initialize_FPS()
-print SetBaudrate_FPS(115200)
-print SetLED_FPS(True)
-print SetLED_FPS(False)
-CountEnrolled_FPS()
-print Terminate_FPS()
 #CheckEnrolled
 #EnrollStart
 #Enroll1
