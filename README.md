@@ -28,3 +28,8 @@ This repository is under construction, hopefully will be completed by this month
 	<br>
 </h1>
 
+<h1 align="center">
+	<img width="30" src="https://raw.githubusercontent.com/iamkotwala/cerberus/master/logo-circle.png">
+	<br>
+	<br>
+</h1>
