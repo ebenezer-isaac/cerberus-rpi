@@ -7,4 +7,4 @@ Remote Fingerprint Attendance System
 >- ENC28J60
 >- DS1307 (in the future)
 
-This repository is under construction, hopefully will be completed by this month end (Sep 2019)
+This repository is under construction, hopefully will be completed by this month's end (Sep 2019)
