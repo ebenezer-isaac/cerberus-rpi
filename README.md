@@ -3,10 +3,11 @@
 	<br>
 	Cerberus
 	<br>
+	Remote Fingerprint Attendance System
 </h1>
 
-Remote Fingerprint Attendance System
->Hardware used :
+
+Hardware used :
 >- Raspberry Pi Zero 1.3
 >- GT511C3
 >- 2004 Character Display
