@@ -1,7 +1,7 @@
 <h1 align="center">
 	<img width="80" src="https://raw.githubusercontent.com/iamkotwala/cerberus/master/logo-circle.png">
 	<br>
-	Cerberus
+	C E R B E R U S
 	<br>
 	Remote Fingerprint Attendance System
 </h1>
