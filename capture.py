@@ -1,5 +1,4 @@
 import fingerpi as fp
-import time
 import pickle
 
 print 'Opening connection...'
@@ -22,5 +21,3 @@ if capture[0]['ACK']:
 	print 'Closing connection...'
 	with open('capture.pickle', 'wb') as f:
 		pickle.dump(raw_img, f)
-
-
