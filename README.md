@@ -1,8 +1,9 @@
-# cerberus
-
-[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
-
-[![Built with RPI](https://img.shields.io/badge/workswith-raspberryPi-blue)](http://shields.io/#your-badge)
+<h1 align="center">
+	<img width="80" src="https://raw.githubusercontent.com/iamkotwala/cerberus/master/logo-circle.png">
+	<br>
+	Cerberus
+	<br>
+</h1>
 
 Remote Fingerprint Attendance System
 >Hardware used :
@@ -28,8 +29,7 @@ This repository is under construction, hopefully will be completed by this month
 	<br>
 </h1>
 
-<h1 align="center">
-	<img width="30" src="https://raw.githubusercontent.com/iamkotwala/cerberus/master/logo-circle.png">
-	<br>
-	<br>
-</h1>
+
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+
+[![Built with RPI](https://img.shields.io/badge/workswith-raspberryPi-blue)](http://shields.io/#your-badge)
