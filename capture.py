@@ -6,8 +6,8 @@ print 'Opening connection...'
 f = fp.FingerPi()
 f.Open(extra_info = True, check_baudrate = True)
 f.ChangeBaudrate(115200)
-print 'Place the finger on the scanner to capture finger'
 f.CmosLed(True)
+print 'Place the finger on the scanner to capture finger'
 fingerflag=f.IsPressFinger()[0]["Parameter"]
 while fingerflag!="""True""":
 	if fingerflag != 'NACK_FINGER_IS_NOT_PRESSED':
