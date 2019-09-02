@@ -54,7 +54,7 @@ def GetImage_FPS():
 	f.CaptureFinger(False)
 	SetLED_FPS(False)
 	response = f.GetImage()
-	return response[1]['Data']
+	return response
 
 #Below functions have not been tested
 

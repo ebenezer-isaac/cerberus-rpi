@@ -58,8 +58,8 @@ class FingerPi():
     def getData(self, data_len):
         # Data length is different for every command
         response = self.serial.read(1+1+2+data_len+2) # Header(2) + ID(2) + data + checksum(2)
-        # return response
-        return decode_data_packet(bytearray(response))
+        return response
+        #return decode_data_packet(bytearray(response))
 
 
     ##########################################################
@@ -251,7 +251,7 @@ class FingerPi():
             self.serial.timeout = None # This is dangerous!
             data = self.getData(dim[0]*dim[1])
             self.serial.timeout = self.timeout
-            data['Data'] = (data['Data'], dim)
+            #data['Data'] = (data['Data'], dim)
         return [response, data]
 
     def GetRawImage(self, dim = (160, 120)):
@@ -265,7 +265,7 @@ class FingerPi():
             data = self.getData(dim[0]*dim[1])
             self.serial.timeout = self.timeout
             # Add dimensions to the data
-            data['Data'] = (data['Data'], dim)
+            #data['Data'] = (data['Data'], dim)
         return [response, data]
 
     def GetTemplate(self, ID):
