@@ -9,6 +9,7 @@ def SetLED_FPS(state):
 	response = f.CmosLed(state)
 	return response[0]['ACK']
 def Terminate_FPS():
+	SetLED_FPS(False)
 	response = f.Close()
 	return response[0]['ACK']
 def SetBaudrate_FPS(baud):
@@ -29,6 +30,11 @@ def IsPressFinger_FPS():
 		return True
 	else:
 		return False
+def WaitForFinger_FPS():
+	SetLED_FPS(True)
+	while IsPressFinger_FPS()==False:
+		pass
+	return True
 def DeleteId_FPS(id):
 	response = f.DeleteId(id)
 	if response[0]['Parameter']==0:
@@ -36,17 +42,22 @@ def DeleteId_FPS(id):
 	else:
 		return False
 def Identify_FPS():
+	SetLED_FPS(True)
 	f.CaptureFinger(False)
 	response = f.Identify()
 	if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
 		response[0]['Parameter']='200'
+	SetLED_FPS(False)
 	return response[0]['Parameter']
-	
-#Below functions have not been tested
 def GetImage_FPS():
+	SetLED_FPS(True)
 	f.CaptureFinger(False)
+	SetLED_FPS(False)
 	response = f.GetImage()
 	return response[1]['Data']
+
+#Below functions have not been tested
+
 def GetTemplate_FPS(id):
 	response = f.GetTemplate(id)
 	return response[1]['Data']
