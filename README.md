@@ -12,7 +12,7 @@
 * <a href="https://robu.in/product/fingerprint-scanner-ttl-gt-511c3/">GT511C3</a>
 * <a href="https://robu.in/product/serial-2004-20-x-4-iici2ctwi-blue-backlight-lcd-module/?gclid=CjwKCAjwza_mBRBTEiwASDWVvgv5-7Z2ck3JDQexbm28OYU8A0GNDzFmfHsDwZYOSB_mKJHKnKkA3RoCr78QAvD_BwE">2004 Character Display</a>
 * <a href="https://robu.in/product/ethernet-module-enc28j60/">ENC28J60</a>
-* <a href="https://robu.in/product/tiny-rtc-real-time-clock-ds1307-i2c-iic-module-for-arduino/">DS1307 (will be implemented in the future)</a>
+* <a href="https://robu.in/product/tiny-rtc-real-time-clock-ds1307-i2c-iic-module-for-arduino/">DS1307</a> (will be implemented in the future)
 * <a href="https://robu.in/product/4x4-matrix-keypad-membrane-switch-arduino-arm-mcu/">4x4 Membrane Keypad</a>
 * Buzzer</a>
 * A Few LEDs</a>
