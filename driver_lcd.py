@@ -96,7 +96,7 @@ class lcd:
          self.lcd_write(ord(char), Rs)
 
    # clear lcd and set to home
-   def lcd_clear(self):
+   def clrscr(self):
       self.lcd_write(LCD_CLEARDISPLAY)
       self.lcd_write(LCD_RETURNHOME)
 
@@ -105,3 +105,4 @@ class lcd:
          self.line=1
       self.lcd_display_string("                    ",self.line)
       self.lcd_display_string(str(text),self.line)
+      self.line = self.line + 1
