@@ -1,8 +1,18 @@
 import driver_lcd as lcddriver
-import subprocess
-time = subprocess.check_output("hwclock -r", shell=True)
+import driver_rtc as rtcdriver
 lcd = lcddriver.lcd()
+rtc = rtcdriver.rtc()
+time =rtc.getTime()
 lcd.println("Hello world")
 lcd.println("Ebenezer Isaac")
-lcd.println(str(time[:19]))
+lcd.println(time)
 print time
+print rtc.year
+print rtc.month
+print rtc.date
+print rtc.hour
+print rtc.min
+print rtc.sec
+print rtc.day
+
+
