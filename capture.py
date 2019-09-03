@@ -1,4 +1,4 @@
-from fingerprint import *
+from driver_fps import *
 import pickle
 
 print 'Opening connection...'

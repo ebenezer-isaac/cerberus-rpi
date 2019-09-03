@@ -1,4 +1,4 @@
-import i2c_lib
+import driver_i2c
 from time import *
 
 # LCD Address

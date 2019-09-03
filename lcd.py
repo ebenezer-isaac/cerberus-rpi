@@ -1,8 +1,5 @@
-import lcddriver
-from time import *
-
+from driver_lcd import *
 lcd = lcddriver.lcd()
-
 lcd.lcd_display_string("Hello world", 1)
 lcd.lcd_display_string("Ebenezer Isaac", 2)
 lcd.lcd_display_string("!@#$%^&*()", 3)
