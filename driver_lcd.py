@@ -52,14 +52,13 @@ Rs = 0b00000001 # Register select bit
 
 class lcd:
    #initializes objects and lcd
+   line = 1
    def __init__(self):
-      self.lcd_device = i2c_lib.i2c_device(ADDRESS)
-
+      self.lcd_device = driver_i2c.i2c_device(ADDRESS)
       self.lcd_write(0x03)
       self.lcd_write(0x03)
       self.lcd_write(0x03)
       self.lcd_write(0x02)
-
       self.lcd_write(LCD_FUNCTIONSET | LCD_2LINE | LCD_5x8DOTS | LCD_4BITMODE)
       self.lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON)
       self.lcd_write(LCD_CLEARDISPLAY)
@@ -83,14 +82,14 @@ class lcd:
       self.lcd_write_four_bits(mode | ((cmd << 4) & 0xF0))
 
    # put string function
-   def lcd_display_string(self, string, line):
-      if line == 1:
+   def lcd_display_string(self, string, row):
+      if row == 1:
          self.lcd_write(0x80)
-      if line == 2:
+      if row == 2:
          self.lcd_write(0xC0)
-      if line == 3:
+      if row == 3:
          self.lcd_write(0x94)
-      if line == 4:
+      if row == 4:
          self.lcd_write(0xD4)
 
       for char in string:
@@ -100,3 +99,9 @@ class lcd:
    def lcd_clear(self):
       self.lcd_write(LCD_CLEARDISPLAY)
       self.lcd_write(LCD_RETURNHOME)
+
+   def println(self,text):
+      if self.line >4:
+         self.line=1
+      self.lcd_display_string("                    ",self.line)
+      self.lcd_display_string(str(text),self.line)

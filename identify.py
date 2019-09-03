@@ -1,12 +1,15 @@
 from driver_fps import *
-from driver_lcd import *
+import driver_lcd as lcddriver
 import pickle
 lcd = lcddriver.lcd()
-lcd.lcd_display_string("Open FPS", 1)
+lcd.println("Open FPS")
+print 'Open FPS'
 Initialize_FPS()
 SetLED_FPS(True)
-lcd.lcd_display_string("Press Finger", 1)
+lcd.println("Press Finger")
+print 'Press Finger'
 WaitForFinger_FPS()
 id = Identify_FPS()
 Terminate_FPS()
+lcd.println("ID = "+str(id))
 print 'ID = '+str(id)
