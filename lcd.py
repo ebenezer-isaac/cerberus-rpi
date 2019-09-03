@@ -1,6 +1,8 @@
-from driver_lcd import *
+import driver_lcd as lcddriver
+import subprocess
+time = subprocess.check_output("hwclock -r", shell=True)
 lcd = lcddriver.lcd()
-lcd.lcd_display_string("Hello world", 1)
-lcd.lcd_display_string("Ebenezer Isaac", 2)
-lcd.lcd_display_string("!@#$%^&*()", 3)
-lcd.lcd_display_string("I am a Raspberry 1.3", 4)
+lcd.println("Hello world")
+lcd.println("Ebenezer Isaac")
+lcd.println(str(time[:19]))
+print time
