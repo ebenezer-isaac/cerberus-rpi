@@ -61,9 +61,9 @@ def GetImage_FPS():
 def GetTemplate_FPS(id):
 	response = f.GetTemplate(id)
 	return response[1]['Data']
-def SetTemplate_FPS(id):
-	response = f.SetTemplate(id)
-	return response[1]['Data']
+def SetTemplate_FPS(id,data):
+	response = f.SetTemplate(id,data)
+	return response
 def EnrollStart_FPS(id):
 	response = f.EnrollStart(id)
 	return response[0]['ACK']
