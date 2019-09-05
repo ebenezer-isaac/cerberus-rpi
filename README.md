@@ -1,5 +1,5 @@
 <h1 align="center">
-	<img width="80" src="https://raw.githubusercontent.com/iamkotwala/cerberus/master/logo-circle.png">
+	<img width="80" src="https://raw.githubusercontent.com/ebenezerv99/cerberus-web/master/Logo/logo-circle.png">
 	<br>
 	C E R B E R U S
 	<br>
@@ -21,18 +21,17 @@ This repository is under construction, hopefully will be completed by this month
 
 ### Architecture of the system ### 
 <h1 align="center">
-	<img width="600" src="https://raw.githubusercontent.com/iamkotwala/cerberus/master/Architecture.jpg">
+	<img width="600" src="https://raw.githubusercontent.com/ebenezerv99/cerberus-web/master/Documentation/Architecture.jpg">
 	<br>
 	<br>
 </h1>
 
 ### Flow of the RaspberryPI ### 
 <h1 align="center">
-	<img width="600" src="https://raw.githubusercontent.com/iamkotwala/cerberus/master/FlowChart.jpg">
+	<img width="600" src="https://raw.githubusercontent.com/ebenezerv99/cerberus-web/master/Documentation/FlowChart.jpg">
 	<br>
 	<br>
 </h1>
-
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
 
