@@ -4,7 +4,7 @@ import pickle
 print 'Opening connection...'
 Initialize_FPS()
 SetLED_FPS(True)
-text = open("template.txt","rb") 
+text = open("dbtemp.txt","rb") 
 template_data = text.read() 
 text.close()
 response = SetTemplate_FPS(10,template_data)
