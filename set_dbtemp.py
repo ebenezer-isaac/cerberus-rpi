@@ -20,8 +20,8 @@ tx_time = time.time() - t
 print 'Template Fetched'
 print 'Time to transmit:', tx_time
 t = time.time()
-text = open("template.txt","wb") 
-text.write(str(data)) 
+text = open("template.txt","rb") 
+template = text.write(str(data)) 
 text.close()
 tx_time = time.time() - t
 print 'Template written to .txt file successfully'
@@ -36,7 +36,7 @@ cur = myconn.cursor()
 print 'mysql connection established'
 try:
 	sql="insert into fingerprints values(%s, %s)"
-	val = (2017033800104472)
+	val = (2017033800104472,template)
     cur.execute(sql,val)
 except:
     myconn.rollback()
@@ -61,13 +61,7 @@ text = open("dbtemp.txt","wb")
 text.write(str(data)) 
 text.close()
 print 'data has been written to text file'
-t = time.time()
-text = open("dbtemp.txt","rb") 
-template_data = text.read() 
-text.close()
-tx_time = time.time() - t
-print 'Template written to txt file'
-print 'Time to  write template to txt file:', tx_time
+print 'Time to write the template:', tx_time
 t = time.time()
 response = SetTemplate_FPS(10,template_data)
 tx_time = time.time() - t
