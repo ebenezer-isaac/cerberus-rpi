@@ -3,7 +3,7 @@ import subprocess
 print 'Opening connection...'
 Initialize_FPS()
 id = 0
-while id < = 199:
+while id<=199:
 	if CheckEnrolled_FPS(id):
 		data = GetTemplate_FPS(id)
 		text = open("./templates/template-id-"+str(id)+".txt","w") 
