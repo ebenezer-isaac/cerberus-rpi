@@ -9,7 +9,7 @@ SetLED_FPS(True)
 lcd.println("Press Finger")
 print 'Press Finger'
 WaitForFinger_FPS()
-id = Identify_FPS()
+id = CapIdentify_FPS()
 Terminate_FPS()
 lcd.println("ID = "+str(id))
 print 'ID = '+str(id)

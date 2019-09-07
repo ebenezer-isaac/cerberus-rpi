@@ -19,8 +19,9 @@ while id<=199:
 			cur.execute(sql,val)
 		except:
 			myconn.rollback()
-		print '			Template Uploaded for id '+str(id)	
+		print 'Template Uploaded for id '+str(id)
 	id = id+1
+DeleteAll_FPS()
 Terminate_FPS()
 print 'Connection closed'
 print 'Templates stored in templates folder successfully'

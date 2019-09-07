@@ -73,16 +73,16 @@ def EnrollStart_FPS(id):
 	response = f.EnrollStart(id)
 	return response[0]['ACK']
 def Enroll1_FPS():
-	response = f.Close()
+	response = f.Enroll1()
 	return response[0]['ACK']
 def Enroll2_FPS():
-	response = f.Close()
+	response = f.Enroll2()
 	return response[0]['ACK']
 def Enroll3_FPS():
-	response = f.Close()
+	response = f.Enroll3()
 	return response[0]['ACK']
 def DeleteAll_FPS():
-	response = f.Close()
+	response = f.DeleteAll()
 	return response[0]['ACK']
 	
 #print Initialize_FPS()
