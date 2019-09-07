@@ -41,20 +41,25 @@ def DeleteId_FPS(id):
 		return True
 	else:
 		return False
-def Identify_FPS():
+def CapIdentify_FPS():
 	SetLED_FPS(True)
 	f.CaptureFinger(False)
+	SetLED_FPS(False)
 	response = f.Identify()
 	if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
 		response[0]['Parameter']='200'
-	SetLED_FPS(False)
 	return response[0]['Parameter']
-def GetImage_FPS():
-	SetLED_FPS(True)
-	f.CaptureFinger(False)
+def Identify_FPS():
 	SetLED_FPS(False)
-	response = f.GetImage()
-	return response
+	response = f.Identify()
+	if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
+		response[0]['Parameter']='200'
+	return response[0]['Parameter']
+def CaptureFinger_FPS():
+	SetLED_FPS(True)
+	response = f.CaptureFinger(False)
+	SetLED_FPS(False)
+	return response[0]['ACK']
 
 #Below functions have not been tested
 
