@@ -1,5 +1,3 @@
-#2019-09-04 00:10:02.891271+05:30
-#timestamp = (str("2019-09-04 00:10:02.891271+05:30")[:19]).split(' ')
 import datetime
 import subprocess
 
