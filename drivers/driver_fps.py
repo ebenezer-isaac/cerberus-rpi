@@ -49,6 +49,7 @@ def CapIdentify_FPS():
 	if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
 		response[0]['Parameter']='200'
 	return response[0]['Parameter']
+	#return response[0]['Parameter']
 def Identify_FPS():
 	SetLED_FPS(False)
 	response = f.Identify()

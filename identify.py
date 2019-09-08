@@ -1,5 +1,4 @@
-from driver_fps import *
-import driver_lcd as lcddriver
+import drivers
 lcd = lcddriver.lcd()
 lcd.clrscr()
 lcd.println("Open FPS")
