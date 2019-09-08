@@ -1,7 +1,7 @@
 import datetime
 import subprocess
 
-class rtc:
+class RTC:
 	year = 0
 	month = 0
 	date = 0
