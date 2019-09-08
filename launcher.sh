@@ -1,3 +1,3 @@
 cd /home/pi/cerberus-rpi/
-sudo python ip.py &
+sudo python boot.py &
 cd /

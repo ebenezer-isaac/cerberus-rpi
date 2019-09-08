@@ -100,9 +100,11 @@ class LCD:
       self.lcd_write(LCD_CLEARDISPLAY)
       self.lcd_write(LCD_RETURNHOME)
 
-   def println(self,text):
-      if self.line >4:
-         self.line=1
+   def println(self,text,line=None):
+      if line is not None:
+         self.line = line
+      if self.line>4:
+	 self.line=self.line-4
       self.lcd_display_string("                    ",self.line)
       self.lcd_display_string(str(text),self.line)
       self.line = self.line + 1

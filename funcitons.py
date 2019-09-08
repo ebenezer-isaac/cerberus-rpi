@@ -7,30 +7,29 @@ import time
 fps = FingerPi()
 lcd = LCD()
 rtc = RTC()
-"""
+
 def get_templates():
 	print 'Opening connection...'
-	fps.open()
 	id = 0
 	myconn = mysql.connector.connect(host = "192.168.0.5", user = "root",passwd = "cerberus",database = "cerberus")  
 	cur = myconn.cursor()
 	while id<=199:
-		if CheckEnrolled_FPS(id):
+		if fps.checkEnrolled(id):
 			data = fps.getTemplate(id)
 			text = open("./templates/template-id-"+str(id)+".txt","w") 
 			text.write(str(data)) 
 			text.close()
 			print 'Template Fetched for id '+str(id)
-			try:
+			"""try:
 				sql=insert into fingerprints values(%s, %s)
 				val = (id,data)
 				cur.execute(sql,val)
 			except:
-				myconn.rollback()
+				myconn.rollback()"""
 			print 'Template Uploaded for id '+str(id)
 		id = id+1
 	fps.deleteAll()
-	fps.close()
+	myconn.close()
 	print 'Connection closed'
 	print 'Templates stored in templates folder successfully'
 
@@ -38,17 +37,14 @@ def identify():
 	lcd.clrscr()
 	lcd.println("Open FPS")
 	print 'Open FPS'
-	fps.open()
 	fps.setLED(True)
 	lcd.println("Press Finger")
 	print 'Press Finger'
-	fps.identify_FPS()
-	fps.close()
+	id = fps.identify()
 	lcd.println("ID = "+str(id))
 	print 'ID = '+str(id)
-"""
+
 def print_enrolled():
-	fps.open()
 	lcd.clrscr()
 	lcd.println('Hello World')
 	t = rtc.getTime()
@@ -62,9 +58,11 @@ def print_enrolled():
 			print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
 			found = found+1
 		i=i+1
-	fps.close()
-print_enrolled()
-"""def increment():
+fps.open()
+#print_enrolled()
+identify()
+#get_templates()
+def time_increment():
 	sec = rtc.sec
 	min = rtc.min
 	hour = rtc.hour
@@ -81,13 +79,6 @@ print_enrolled()
 	rtc.sec = sec
 	rtc.min = min
 	rtc.hour = hour
-
-def mod(num):
-	if num<10:
-		Mod = '0'+str(num)
-	else:
-		Mod = str(num)
-	return Mod
 
 def print_time():
 	lcd = lcddriver.lcd()
@@ -106,7 +97,8 @@ def print_time():
 		if tx-t>1:
 			lcd.lcd_display_string(mod(rtc.hour)+':'+mod(rtc.min)+':'+mod(rtc.sec)+' '+str(rtc.date)+'/'+mod(rtc.month)+'/'+mod(rtc.year),4)
 			t = time.time()
-			increment()
+			time_increment()
+"""
 def testing():
 	id = 82
 	print 'Opening connection... FPS'
@@ -199,10 +191,9 @@ def testing():
 		i=i+1
 	Terminate_FPS()
 	print 'Connection closed'
-
+"""
 def set_templates():
 	print 'Opening connection...'
-	Initialize_FPS()
 	myconn = mysql.connector.connect(host = "192.168.0.5", user = "root",passwd = "cerberus",database = "cerberus")  
 	cur = myconn.cursor()
 	DeleteAll_FPS()
