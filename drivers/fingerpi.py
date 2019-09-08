@@ -55,9 +55,9 @@ class FingerPi():
         if extra_info:
             data = self.getData(16+4+4)
         self.serial.timeout = self.timeout
-		self.changeBaudrate(115200)
+	self.changeBaudrate(115200)
         response =  [response, data]
-		return response[0]['ACK']
+	return response[0]['ACK']
     def close (self):
         self.ChangeBaudrate(9600)
         if self.sendCommand('Close'):
@@ -66,13 +66,13 @@ class FingerPi():
             self.serial.flushOutput()
             self.serial.close()
             response =  [response, data]
-			return response[0]['ACK']
+	    return response[0]['ACK']
         else:
             raise RuntimeError("Couldn't send packet")
     def setLED(self, on = False):
         if self.sendCommand('CmosLed', on):
             response = [self.getResponse(), None]
-			return response[0]['ACK']
+		return response[0]['ACK']
         else:
             raise RuntimeError("Couldn't send packet")
     def changeBaudrate(self, baudrate):
