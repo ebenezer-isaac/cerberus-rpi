@@ -49,6 +49,10 @@ def identify():
 """
 def print_enrolled():
 	fps.open()
+	lcd.clrscr()
+	lcd.println('Hello World')
+	t = rtc.getTime()
+	lcd.println(t)
 	count = fps.countEnrolled()
 	i = 0;
 	print 'Total number of enrolled fingerprints = '+str(count)
