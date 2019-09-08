@@ -4,7 +4,7 @@
 import os, sys
 import serial
 
-from .base import *
+from base import *
 
 class FingerPi():
     def __init__(self,

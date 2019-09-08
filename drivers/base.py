@@ -1,6 +1,6 @@
 import struct
 
-from .structure import *
+from structure import *
 
 """
 Command Packet:
