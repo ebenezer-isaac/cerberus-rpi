@@ -1,4 +1,4 @@
-import driver_i2c
+import i2c
 from time import *
 
 # LCD Address
@@ -54,7 +54,7 @@ class LCD:
    #initializes objects and lcd
    line = 1
    def __init__(self):
-      self.lcd_device = driver_i2c.i2c_device(ADDRESS)
+      self.lcd_device = i2c.i2c_device(ADDRESS)
       self.lcd_write(0x03)
       self.lcd_write(0x03)
       self.lcd_write(0x03)
