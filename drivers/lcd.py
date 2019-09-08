@@ -1,4 +1,4 @@
-import driver_i2c
+import i2c
 from time import *
 
 # LCD Address
@@ -50,11 +50,11 @@ En = 0b00000100 # Enable bit
 Rw = 0b00000010 # Read/Write bit
 Rs = 0b00000001 # Register select bit
 
-class lcd:
+class LCD:
    #initializes objects and lcd
    line = 1
    def __init__(self):
-      self.lcd_device = driver_i2c.i2c_device(ADDRESS)
+      self.lcd_device = i2c.i2c_device(ADDRESS)
       self.lcd_write(0x03)
       self.lcd_write(0x03)
       self.lcd_write(0x03)
@@ -100,9 +100,11 @@ class lcd:
       self.lcd_write(LCD_CLEARDISPLAY)
       self.lcd_write(LCD_RETURNHOME)
 
-   def println(self,text):
-      if self.line >4:
-         self.line=1
+   def println(self,text,line=None):
+      if line is not None:
+         self.line = line
+      if self.line>4:
+	 self.line=self.line-4
       self.lcd_display_string("                    ",self.line)
       self.lcd_display_string(str(text),self.line)
       self.line = self.line + 1
