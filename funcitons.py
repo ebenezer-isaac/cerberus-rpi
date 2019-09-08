@@ -48,7 +48,7 @@ def identify():
 	print 'ID = '+str(id)
 """
 def print_enrolled():
-	print fps.open()
+	fps.open()
 	count = fps.countEnrolled()
 	i = 0;
 	print 'Total number of enrolled fingerprints = '+str(count)
@@ -58,7 +58,7 @@ def print_enrolled():
 			print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
 			found = found+1
 		i=i+1
-	Terminate_FPS()
+	fps.close()
 print_enrolled()
 """def increment():
 	sec = rtc.sec

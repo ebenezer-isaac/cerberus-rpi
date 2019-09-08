@@ -59,20 +59,20 @@ class FingerPi():
         response =  [response, data]
 	return response[0]['ACK']
     def close (self):
-        self.ChangeBaudrate(9600)
+        self.changeBaudrate(9600)
         if self.sendCommand('Close'):
             response = self.getResponse()
             self.serial.flushInput()
             self.serial.flushOutput()
             self.serial.close()
-            response =  [response, data]
+            response =  [response, None]
 	    return response[0]['ACK']
         else:
             raise RuntimeError("Couldn't send packet")
     def setLED(self, on = False):
         if self.sendCommand('CmosLed', on):
             response = [self.getResponse(), None]
-		return response[0]['ACK']
+	    return response[0]['ACK']
         else:
             raise RuntimeError("Couldn't send packet")
     def changeBaudrate(self, baudrate):
@@ -80,60 +80,59 @@ class FingerPi():
             response = self.getResponse()
             self.serial.baudrate = baudrate
             response = [response, None]
-			return response[0]['ACK']
+	    return response[0]['ACK']
         else:
             raise RuntimeError("Couldn't send packet")
     def countEnrolled(self):
         if self.sendCommand('GetEnrollCount'):
             response = [self.getResponse(), None]
-			return response[0]['Parameter']
+	    return response[0]['Parameter']
         else:
             raise RuntimeError("Couldn't send packet")
     def checkEnrolled(self, ID):
         if self.sendCommand('CheckEnrolled', ID):
             response = [self.getResponse(), None]
-			if response[0]['Parameter']==0:
-				return True
-			else:
-				return False
-		else:
+	    if response[0]['Parameter']==0:
+		return True
+	    else:
+		return False
+	else:
             raise RuntimeError("Couldn't send packet")
     def isPressFinger(self):
         if self.sendCommand('IsPressFinger'):
             response = [self.getResponse(), None]
-			if response[0]['Parameter']==0:
-				return True
-			else:
-				return False
+	    if response[0]['Parameter']==0:
+	        return True
+	    else:
+	        return False
         else:
             raise RuntimeError("Couldn't send packet")
-	def waitForFinger(self):
-		self.setLED(True)
-		while self.isPressFinger()==False:
-			pass
-		return True
+    def waitForFinger(self):
+	self.setLED(True)
+	while self.isPressFinger()==False:
+	    pass
+	return True
     def identify(self):
-		self.setLED(True)
-		if f.captureFinger(False)
-			if self.sendCommand('Identify'):
-				response = [self.getResponse(), None]
-				if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
-					response[0]['Parameter']='200'
-				return response[0]['Parameter']
-			else:
-				raise RuntimeError("Couldn't send packet")
-		else:
-			return 200
+	self.setLED(True)
+	if f.captureFinger(False):
+	    if self.sendCommand('Identify'):
+		response = [self.getResponse(), None]
+		if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
+		    response[0]['Parameter']='200'
+		return response[0]['Parameter']
+	    else:
+		raise RuntimeError("Couldn't send packet")
+	else:
+	    return 200
     def captureFinger(self, best_image = False):
         if best_image:
             self.serial.timeout = 10
         if self.sendCommand('CaptureFinger', best_image):
             self.serial.timeout = self.timeout
             response = [self.getResponse(), None]
-			return response[0]['ACK']
+	    return response[0]['ACK']
         else:
             raise RuntimeError("Couldn't send packet")
-
     def getTemplate(self, ID):
         if self.sendCommand('GetTemplate', ID):
             response = self.getResponse()
@@ -143,7 +142,7 @@ class FingerPi():
         data = self.getData(498)
         self.serial.timeout = self.timeout
         response = [response, data]
-		return response[1]['Data']
+ 	return response[1]['Data']
     def setTemplate(self, ID, template):
         if self.sendCommand('SetTemplate', ID):
             response = self.getResponse()
@@ -154,8 +153,8 @@ class FingerPi():
         else:
             raise RuntimeError("Couldn't send packet (data)")
         response = [response, data]
-		return response[0]['ACK']
-	def enroll(self, ID):
+	return response[0]['ACK']
+    def enroll(self, ID):
         self.save = ID == -1
         if self.sendCommand('EnrollStart', ID):
             response = [self.getResponse(), None]
@@ -183,15 +182,15 @@ class FingerPi():
     def deleteId(self, ID):
         if self.sendCommand('DeleteId', ID):
             response = [self.getResponse(), None]
-			if response[0]['Parameter']==0:
-				return True
-			else:
-				return False
+            if response[0]['Parameter']==0:
+		return True
+	    else:
+		return False
         else:
             raise RuntimeError("Couldn't send packet")
     def deleteAll(self):
         if self.sendCommand('DeleteAll'):
             response = [self.getResponse(), None]
-			return response[0]['ACK']
+	    return response[0]['ACK']
         else:
             raise RuntimeError("Couldn't send packet")
