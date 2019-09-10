@@ -19,17 +19,25 @@ def sync ():
     text = open("/templates/log.txt","rb") 
 	logid = int(str(text.read()).strip())
 	text.close()
+    text = open("/templates/sync.txt","rb") 
+	sync = int(str(text.read()).strip())
+	text.close()
     try:
-		sql="""select * from `log` where logID>%s and type='fingerprints'"""
+		sql="""SELECT logID, (select datedata.dateID from datedata,log where log.dateID=datedata.dateID) as date ,(select timedata.timeID from timedata,log where log.timeID=timedata.timeID)as time, comments FROM `log` where logTypeID=1 and logID>%s"""
 		val = (logid)
         cur.execute(sql,val)
 		result = cur.fetchall()
 		for x in result:
 			logid=x[0]
-            comments = x[5]
+            date = x[1]
+            date = x[2]
+            comments = x[3]
             prn = comments[0]
             status = comments[1]
-            if status=='delete':
+	except:
+		myconn.rollback()
+        
+                    if status=='delete':
                 os.remove("/templates/"+str(prn))
             elif status=='enroll':
                 try:
@@ -45,8 +53,6 @@ def sync ():
                         text.close()
                 except:
                     myconn.rollback()
-	except:
-		myconn.rollback()
     text = "templates/log.txt","wb") 
     text.write(str(logid)) 
     text.close()
