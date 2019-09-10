@@ -10,7 +10,7 @@ class RTC:
 	sec = 0
 	day = ''
 	def getTime(self):
-		timestamp = (str(subprocess.check_output("hwclock -r", shell=True))[:19]).split(' ')
+		timestamp = (str(subprocess.check_output("hwclock", shell=True))[:19]).split(' ')
 		self.year = str(timestamp[0][:4])
 		self.month = "{:02d}".format(int(str(timestamp[0])[5:7]))
 		self.date = "{:02d}".format(int(str(timestamp[0])[8:10]))
