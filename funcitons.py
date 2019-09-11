@@ -1,11 +1,9 @@
+import mysql.connector, subprocess, time, json, os
 from drivers.fingerpi import FingerPi
 from drivers.lcd import LCD
 from drivers.rtc import RTC
-import mysql.connector
-import subprocess
-import time
-import json
-import os
+import datetime
+import calendar
 fps = FingerPi()
 lcd = LCD()
 rtc = RTC()
@@ -13,14 +11,15 @@ host = "192.168.0.5"
 user = "root"
 password = "cerberus"
 database = "cerberus"
+labid = 1
 def sync ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
     cur = myconn.cursor()
-    text = open("./templates/log.txt","rb")
+    text = open("./docs/log.txt","rb")
     logid = int(str(text.read()).strip())
     text.close()
     sync = []
-    with open('./templates/sync.txt', "rb") as fp:
+    with open('./docs/sync.txt', "rb") as fp:
         for i in fp.readlines():
     	    tmp = i.strip()
 	    tmp = tmp.split(",")
@@ -46,7 +45,11 @@ def sync ():
     sync.sort()
     print sync
     for x in range(0,len(sync)):
-	datetime = sync[x][0]
+	tmp = str(sync[x][0]).split()
+	date = tmp[0]
+	time = tmp[1]
+	dateid = get_dateId(date)
+	timeid = get_timeId(time)
 	template_name = sync[x][1]
         temp = str(template_name).split('-')
         user_id = temp[0]
@@ -60,12 +63,13 @@ def sync ():
                 else:
                     sql="delete * from facultyfingerprint where facultyID=%s and templateID=%s"
                 try:
-		    sql="delete * from studentfingerprint into fingerprints values %s, %s)"
 		    val = (user_id,template_id)
 		    cur.execute(sql,val)
-		    #insert into log
-		except:
-		    myconn.rollback()
+   	            sql="insert into log values(1,%s,%s,%s)"
+		    val = (dateid,timeid,template_name+' delete')
+ 	   	    cur.execute(sql,val)
+                except mysql.connector.Error as err:
+                    print(format(err))
             elif status=='enroll':
                 if len(user_id)==16:
                    sql="insert into studentfingerprint values(%s, %s, %s)"
@@ -77,13 +81,15 @@ def sync ():
                 try:
                     val = (user_id,template_id,template)
                     cur.execute(sql,val)
-    		    #insert into log
-                except:
-                    myconn.rollback()
+   	            sql="insert into log values(1,%s,%s,%s)"
+		    val = (dateid,timeid,template_name+' enroll')
+ 	   	    cur.execute(sql,val)
+                except mysql.connector.Error as err:
+                    print(format(err))
         elif source=='db':
             if status=='delete':
                 os.remove('/templates/'+str(template_name)+'.txt')
-                map = json.load(open("./templates/map.json"))
+                map = json.load(open("./docs/map.json"))
 		for fps_id in map:
 		    if map[id]==str(template_name):
 			fps.DeleteId(id)
@@ -104,21 +110,115 @@ def sync ():
                         text.close()
                 except:
                     myconn.rollback()
-    text = open("./templates/log.txt","wb")
+    text = open("./docs/log.txt","wb")
     text.write(str(logid))
     text.close()
-    text = open("./templates/attendance.txt","r")
+    text = open("./docs/attendance.txt","r")
     attandance = text.read()
     text.close()
     line = 0
-    #while line<len(attendance):
-        #insert attendance into database
+    with open('./docs/attendance.txt', "rb") as fp:
+        for i in fp.readlines():
+    	    attendance = i.strip()
+	    attendance = attendance.split(",")
+	    dateid=get_dateId(attendance[0])
+	    timeid=get_timeId(attendance[1])
+	    slotid=get_timeId(attendance[1])
+	    dayid = str(calendar.day_name[datetime.datetime(int(attendance[0][0:4]),int(attendance[0][5:7]),int(attendance[0][8:10])).weekday()]).lower()[0:3]
+	    weekid = datetime.date(int(attendance[0][0:4]),int(attendance[0][5:7]),int(attendance[0][8:10])).isocalendar()[1]
+	    scheduleid=get_scheduleid(slotid,weekid,dayid)
+	    if len(attendance[2])==16:
+ 	        try:
+   	            sql="insert into attendance values(%s,%s,%s,%s)"
+		    val = (attendance[2],scheduleid,dateid,timeid)
+ 	   	    cur.execute(sql,val)
+                except mysql.connector.Error as err:
+                    print(format(err))
+	    else:
+ 	        try:
+   	            sql="UPDATE `timetable` SET `facultyID`=%s WHERE scheduleid=%s"
+		    val = (attendance[2],scheduleid)
+ 	   	    cur.execute(sql,val)
+                except mysql.connector.Error as err:
+                    print(format(err))
+
+def get_scheduleId(slotid,weekid,dayid):
+    scheduleid = 0
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    cur = myconn.cursor()
+    try:
+	sql="SELECT scheduleid from timetable where slotid=%s,labid=%s,weekid,dayid"
+	val = (slotid,labid,weekid,dayid)
+        cur.execute(sql,val)
+	result = cur.fetchall()
+	for x in result:
+	    return x[0]
+    except mysql.connector.Error as err:
+        print(format(err))
+def get_slotId(time):
+    slotid = 0
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    cur = myconn.cursor()
+    try:
+	sql="SELECT slotid from slot where endTime>%s and startTime>%s"
+	val = (time,time)
+        cur.execute(sql,val)
+	result = cur.fetchall()
+	for x in result:
+	    return x[0]
+    except mysql.connector.Error as err:
+        print(format(err))
+def get_timeId(time):
+    timeid = 0
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    cur = myconn.cursor()
+    try:
+	sql="SELECT timeID from timedata where time = %s"
+	val = (time)
+        cur.execute(sql,val)
+	result = cur.fetchall()
+	for x in result:
+	    timeid=x[0]
+	if timeid==0:
+	    try:
+   	        sql="insert into timedata values(%s)"
+		val = (time)
+ 	   	cur.execute(sql,val)
+		return get_timeId(time)
+            except mysql.connector.Error as err:
+                print(format(err))
+    except mysql.connector.Error as err:
+        print(format(err))
+    return timeid
+def get_dateId(time):
+    dateid = 0
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    cur = myconn.cursor()
+    try:
+	sql="SELECT dateID from datedata where date = %s"
+	val = (date)
+        cur.execute(sql,val)
+	result = cur.fetchall()
+	for x in result:
+	    dateid=x[0]
+	if dateid==0:
+	    try:
+   	        sql="insert into datedata values(%s)"
+		val = (date)
+ 	   	cur.execute(sql,val)
+		return get_dateId(date)
+            except mysql.connector.Error as err:
+                print(format(err))
+    except mysql.connector.Error as err:
+        print(format(err))
+    return dateid
+
 def upload_template(template_name,template_id):
     template_name = int(template_name)
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
     cur = myconn.cursor()
-    text = open(str(str('/templates/'+str(template_name[0])+'-'+str(template_name[1])+'.txt','rb') 
-    template_data = text.read() 
+    text = open('/templates/'+str(template_name)+'-'+str(template_id)+'.txt','rb') 
+    template_data = text.readlines() 
     text.close()
     template_name = str(template_name).split('-')
     if len(template_name[0])==16:
@@ -181,11 +281,11 @@ def print_enrolled():
 			print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
 			found = found+1
 		i=i+1
-fps.open()
+#fps.open()
 #print_enrolled()
-identify()
+#identify()
 #get_templates()
-sync()
+#sync()
 def time_increment():
 	sec = rtc.sec
 	min = rtc.min
