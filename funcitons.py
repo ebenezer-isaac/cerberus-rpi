@@ -48,84 +48,78 @@ def sync ():
     for x in range(0,len(sync)):
 	datetime = sync[x][0]
 	template_name = sync[x][1]
-    template_name = str(template_name).split('-')
-    template_name = template_name[0]
-    template_id = template_name[1]
+        temp = str(template_name).split('-')
+        user_id = temp[0]
+        template_id = temp[1]
 	status = sync[x][2]
 	source = sync[x][3]
-	if source=='rpi':
-        if status=='delete':
-            if len(template_name[0])==16:
-                sql="delete * from studentfingerprint where prn=%s and templateID=%s"
-            else:
-                sql="delete * from facultyfingerprint where facultyID=%s and templateID=%s"
-            try:
-				sql="delete * from studentfingerprint into fingerprints values %s, %s)"
-				val = (template_name,template_id)
-				cur.execute(sql,val)
-                
-d = {"one":1, "two":2}
-json.dump(d, open("./templates/map.json",'w'))
-d2 = json.load(open("./templates/map.json"))
-print d2
-
-                sql="insert into log values(1,,%s,%s)"
-                val = ()
-				cur.execute(sql,val)
-			except:
-				myconn.rollback()
-        elif status=='enroll':
-            if len(template_name[0])==16:
-                sql="select template from studentfingerprint where prn=%s and templateID=%s"
-            else:
-                sql="select template from facultyfingerprint where facultyID=%s and templateID=%s"
-            try:
-                val = (template_name,template_id)
-                cur.execute(sql,val)
-                fingerprints = cur.fetchall()
-                for y in result:
-                    template=y[0]
-                    text = open('/templates/'+str(template_name[0])+'-'+str(template_name[1])+'.txt','wb')
-                    text.write(str(template))
-                    text.close()
-            except:
-                myconn.rollback()
-    elif source=='db':
-        if status=='delete':
-            os.remove('/templates/'+str(template_name)+'-'+str(template_id)+'.txt')
-            #delete from fingerprint sensor
-        elif status=='enroll':
-            if len(template_name[0])==16:
-                sql="select template from studentfingerprint values where prn=%s and templateID=%s"
-            else:
-                sql="select template from facultyfingerprint values where facultyID=%s and templateID=%s"
-            try:
-                val = (template_name,template_id)
-                cur.execute(sql,val)
-                fingerprints = cur.fetchall()
-                for y in result:
-                    template=y[0]
-                    text = open('/templates/'+str(template_name[0])+'-'+str(template_name[1])+'.txt','wb')
-                    text.write(str(template))
-                    text.close()
-            except:
-                myconn.rollback()
-    text = "templates/log.txt","wb")
+        if source=='rpi':
+            if status=='delete':
+                if len(user_id)==16:
+                    sql="delete * from studentfingerprint where prn=%s and templateID=%s"
+                else:
+                    sql="delete * from facultyfingerprint where facultyID=%s and templateID=%s"
+                try:
+		    sql="delete * from studentfingerprint into fingerprints values %s, %s)"
+		    val = (user_id,template_id)
+		    cur.execute(sql,val)
+		    #insert into log
+		except:
+		    myconn.rollback()
+            elif status=='enroll':
+                if len(user_id)==16:
+                   sql="insert into studentfingerprint values(%s, %s, %s)"
+                else:
+                   sql="insert into facultyfingerprint values(%s, %s,%s)"
+                text = open('/templates/'+str(template_name)+'.txt','rb')
+                template = text.read()
+                text.close()
+                try:
+                    val = (user_id,template_id,template)
+                    cur.execute(sql,val)
+    		    #insert into log
+                except:
+                    myconn.rollback()
+        elif source=='db':
+            if status=='delete':
+                os.remove('/templates/'+str(template_name)+'.txt')
+                map = json.load(open("./templates/map.json"))
+		for fps_id in map:
+		    if map[id]==str(template_name):
+			fps.DeleteId(id)
+			mps[id]='0'
+	    elif status=='enroll':
+                if len(user_id)==16:
+                    sql="select template from studentfingerprint values where prn=%s and templateID=%s"
+                else:
+                    sql="select template from facultyfingerprint values where facultyID=%s and templateID=%s"
+                try:
+                    val = (user_id,template_id)
+                    cur.execute(sql,val)
+                    fingerprints = cur.fetchall()
+                    for y in result:
+                        template=y[0]
+                        text = open('/templates/'+str(template_name)+'.txt','wb')
+                        text.write(str(template))
+                        text.close()
+                except:
+                    myconn.rollback()
+    text = open("./templates/log.txt","wb")
     text.write(str(logid))
     text.close()
-    text = "templates/attendance.txt","r")
+    text = open("./templates/attendance.txt","r")
     attandance = text.read()
     text.close()
     line = 0
-    while line<len(attendance):
+    #while line<len(attendance):
         #insert attendance into database
-def upload_template(template_name,template_id)
+def upload_template(template_name,template_id):
     template_name = int(template_name)
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
-	cur = myconn.cursor()
+    cur = myconn.cursor()
     text = open(str(str('/templates/'+str(template_name[0])+'-'+str(template_name[1])+'.txt','rb') 
-	template_data = text.read() 
-	text.close()
+    template_data = text.read() 
+    text.close()
     template_name = str(template_name).split('-')
     if len(template_name[0])==16:
         sql="insert into studentfingerprint values(%s, %s, %s)"
@@ -136,27 +130,27 @@ def upload_template(template_name,template_id)
         cur.execute(sql,val)
     except mysql.connector.Error as err:
         print(format(err))
-       
+
 def get_templates():
-	print 'Opening connection...'
-	id = 0
-	myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
-	cur = myconn.cursor()
-	while id<=199:
-		if fps.checkEnrolled(id):
-			data = fps.getTemplate(id)
-			text = open("./templates/template-id-"+str(id)+".txt","w") 
-			text.write(str(data)) 
-			text.close()
-			print 'Template Fetched for id '+str(id)
-			"""try:
-				sql=insert into fingerprints values(%s, %s)
-				val = (id,data)
-				cur.execute(sql,val)
-			except:
-				myconn.rollback()"""
-			print 'Template Uploaded for id '+str(id)
-		id = id+1
+    print 'Opening connection...'
+    id = 0
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    cur = myconn.cursor()
+    while id<=199:
+	if fps.checkEnrolled(id):
+            data = fps.getTemplate(id)
+	    text = open("./templates/template-id-"+str(id)+".txt","w") 
+	    text.write(str(data)) 
+	    text.close()
+	    print 'Template Fetched for id '+str(id)
+	    """try:
+	    sql=insert into fingerprints values(%s, %s)
+	    val = (id,data)
+	    cur.execute(sql,val)
+	    except:
+	    myconn.rollback()"""
+	    print 'Template Uploaded for id '+str(id)
+	id = id+1
 	fps.deleteAll()
 	myconn.close()
 	print 'Connection closed'
