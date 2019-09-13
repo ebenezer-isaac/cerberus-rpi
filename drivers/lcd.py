@@ -97,6 +97,7 @@ class LCD:
 
    # clear lcd and set to home
    def clrscr(self):
+      self.line = 1
       self.lcd_write(LCD_CLEARDISPLAY)
       self.lcd_write(LCD_RETURNHOME)
 

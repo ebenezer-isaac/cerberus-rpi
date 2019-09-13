@@ -18,4 +18,4 @@ class RTC:
 		self.min = "{:02d}".format(int(str(timestamp[1])[3:5]))
 		self.sec = "{:02d}".format(int(str(timestamp[1])[6:8]))
 		self.day = (datetime.date(int(self.year), int(self.month), int(self.date))).strftime("%a")
-		return self.hour+':'+self.min+':'+self.sec+' '+self.date+'/'+self.month+'/'+self.year
+		return self.year+'/'+self.month+'/'+self.date+' '+self.hour+':'+self.min+':'+self.sec
