@@ -12,9 +12,9 @@ user = "root"
 password = "cerberus"
 database = "cerberus"
 labid = 1
-myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
-cur = myconn.cursor()
 def sync_templates ():
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    cur = myconn.cursor()
     text = open("./docs/log.txt","rb")
     logid = int(str(text.read()).strip())
     text.close()
@@ -206,20 +206,8 @@ def get_dateId(time):
         print(format(err))
     return dateid
 
-def identify():
-    lcd.clrscr()
-    lcd.println("Open FPS")
-    print 'Open FPS'
-    fps.setLED(True)
-    lcd.println("Press Finger")
-    print 'Press Finger'
-    id = fps.identify()
-    lcd.println("ID = "+str(id))
-    print 'ID = '+str(id)
-
 def print_enrolled():
     lcd.clrscr()
-    lcd.println('Hello World')
     t = rtc.getTime()
     lcd.println(t)
     count = fps.countEnrolled()
@@ -247,7 +235,6 @@ def print_time():
 		if x!=y:
 			lcd.println(str(rtc.hour)+':'+str(rtc.min)+':'+str(rtc.sec)+' '+str(rtc.date)+'/'+str(rtc.month)+'/'+str(rtc.year),4)
 			x = y
-
 def set_template(template_name,fps_id):
     text = open("./templates/"+str(template_name)+".txt","rb") 
     template_data = text.readlines() 
@@ -255,4 +242,3 @@ def set_template(template_name,fps_id):
     response = fps.setTemplate(id,str(template_data));
     print response
     print 'Templates written to fps successfully'
-print_time()

@@ -113,14 +113,13 @@ class FingerPi():
 	    pass
 	return True
     def identify(self):
-	print 'hello'
 	self.setLED(True)
 	self.waitForFinger()
 	if self.captureFinger(False):
 	    self.setLED(False)
 	    if self.sendCommand('Identify'):
 		response = [self.getResponse(), None]
-		if response[0]['Parameter']=='NACK_IDENTIFY_FAILED':
+		if len(str(response[0]['Parameter']))>3:
 		    response[0]['Parameter']='200'
 		return response[0]['Parameter']
 	    else:
