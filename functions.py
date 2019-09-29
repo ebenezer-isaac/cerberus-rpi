@@ -1,17 +1,29 @@
-import mysql.connector, subprocess, time, json, os
+import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO
 from drivers.fingerpi import FingerPi
-from drivers.lcd import LCD
-from drivers.rtc import RTC
-import datetime
-import calendar
+#from drivers.lcd import LCD
+#from drivers.rtc import RTC
 fps = FingerPi()
-lcd = LCD()
-rtc = RTC()
+#lcd = LCD()
+#rtc = RTC()
 host = "192.168.0.5"
 user = "root"
 password = "cerberus"
 database = "cerberus"
 labid = 1
+def beep(sec):
+        BuzzPin =36
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
+        GPIO.setup(BuzzPin, GPIO.OUT)
+        count = 1
+        while count<=sec:
+                GPIO.output(BuzzPin,True)
+                time.sleep(0.1)
+                GPIO.output(BuzzPin,False)
+                time.sleep(0.2)
+                count = count+1
+        GPIO.output(BuzzPin,False)
+beep(2)
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
     cur = myconn.cursor()

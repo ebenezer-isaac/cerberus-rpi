@@ -13,11 +13,9 @@ import RPi.GPIO as GPIO
 lcd = LCD()
 rtc = RTC()
 fps = FingerPi()
-fps.open()
 def print_time():
-        lcd.clrscr()
-        lcd.println("System Ready")
-        lcd.println("Time :")
+	lcd.clrscr()
+	lcd.println("Time :")
         x = rtc.getTime()
         t = time.time()
         print 'Printing time on LCD'
@@ -45,7 +43,7 @@ def get_prn(id):
     map = json.load(open("./docs/map.json"))
     prn = map[str(id)]
     return prn
-def power_save():
+def light_show():
 	LedPin1 = 11
 	LedPin2 = 12
         fade = 20
@@ -54,42 +52,20 @@ def power_save():
 	GPIO.setup(LedPin1, GPIO.OUT)
 	GPIO.setup(LedPin2, GPIO.OUT)
 	fps.setLED(True)
-	count = 0
-        p1 = GPIO.PWM(LedPin1, 1000)
-        p2 = GPIO.PWM(LedPin2, 1000)
-        p1.start(0)
-        p2.start(0)
 	while not fps.isPressFinger():
-	        while not fps.isPressFinger() and count<=3:
-	                GPIO.output(LedPin2,True)
-	                GPIO.output(LedPin1,False)
-	                time.sleep(0.2)
-	                GPIO.output(LedPin1,True)
-	                GPIO.output(LedPin2,False)
-	                time.sleep(0.2)
-	                count = count+1
-	        GPIO.output(LedPin1,False)
-	        GPIO.output(LedPin2,False)
-	        count = 0
-	        while not fps.isPressFinger() and count<=2:
-	                b0 = 0
-	                b1 = 100
-	                while b0 <=100 and b1 >= 0 and not fps.isPressFinger():
-	                        p1.ChangeDutyCycle(b0)
-	                        p2.ChangeDutyCycle(b1)
-	                        b1 -= fade
-	                        b0 += fade
-	                        time.sleep(0.1)
-	                b0=100
-	                b1=0
-	                while b0 >= 0 and b1 <=100 and not fps.isPressFinger():
-	                        p1.ChangeDutyCycle(b0)
-	                        p2.ChangeDutyCycle(b1)
-	                        b1 += fade;
-	                        b0 -= fade;
-	                        time.sleep(0.1)
-	                count = count+1
-print_time()
+                GPIO.output(LedPin2,True)
+                GPIO.output(LedPin1,False)
+                time.sleep(0.5)
+                GPIO.output(LedPin1,True)
+                GPIO.output(LedPin2,False)
+                time.sleep(0.5)
+        GPIO.output(LedPin1,False)
+        GPIO.output(LedPin2,False)
+lcd.clrscr()
+lcd.println("System Ready")
+lcd.println("Initialize FPS")
+fps.open()
+#print_time()
 while True:
     lcd.clrscr();
     lcd.println("Press Finger")
@@ -98,8 +74,9 @@ while True:
 	lcd.clrscr()
         lcd.println("Finger not found")
 	lcd.println("Light Show")
+	beep(2)
 	time.sleep(1)
-	power_save()
+	light_show()
     else:
         prn = get_prn(id)
         lcd.clrscr()
