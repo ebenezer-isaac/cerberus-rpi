@@ -73,10 +73,10 @@ while True:
     if int(id)==200:
 	lcd.clrscr()
         lcd.println("Finger not found")
-	lcd.println("Light Show")
-	beep(2)
+	#lcd.println("Light Show")
+	#beep(2)
 	time.sleep(1)
-	light_show()
+	#light_show()
     else:
         prn = get_prn(id)
         lcd.clrscr()

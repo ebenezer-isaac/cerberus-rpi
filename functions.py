@@ -23,7 +23,6 @@ def beep(sec):
                 time.sleep(0.2)
                 count = count+1
         GPIO.output(BuzzPin,False)
-beep(2)
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
     cur = myconn.cursor()
