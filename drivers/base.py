@@ -1,6 +1,6 @@
 import struct
 
-from structure import *
+from .structure import *
 
 """
 Command Packet:
@@ -12,7 +12,6 @@ OFFSET  ITEM        TYPE    DESCRIPTION
 4       Parameter   DWORD   Input parameter
 8       Command     WORD    Command code
 10      Checksum    WORD    Byte addition checksum
-
 Response Packet:
 OFFSET  ITEM        TYPE    DESCRIPTION
 ----------------------------------------------------------------
@@ -22,7 +21,6 @@ OFFSET  ITEM        TYPE    DESCRIPTION
 4       Parameter   DWORD   Error code
 8       Response    WORD    Response (ACK/NACK)
 10      Checksum    WORD    Byte addition checksum
-
 Data Packet:
 OFFSET  ITEM        TYPE    DESCRIPTION
 ----------------------------------------------------------------
@@ -143,7 +141,3 @@ def decode_data_packet(packet):
     response['Data'] = packet[3]
     # print packet
     return response
-
-
-
-

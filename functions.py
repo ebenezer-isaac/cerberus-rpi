@@ -1,116 +1,106 @@
-import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO
+import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO, threading
 from drivers.fingerpi import FingerPi
-#from drivers.lcd import LCD
+from drivers.lcd import LCD
 #from drivers.rtc import RTC
 fps = FingerPi()
-#lcd = LCD()
+lcd = LCD()
 #rtc = RTC()
 host = "192.168.0.5"
 user = "root"
 password = "cerberus"
 database = "cerberus"
 labid = 1
+def sleep(milsec):
+    time.sleep(milsec/1000)
 def setup():
-        while not fps.open:
-                fps.open()
-def enroll(id):
-        fps.enroll(id)
-        clrscr()
-        iret = 0
-        errCount = 0
-        while errCount <= 2:
-                if (errCount > 0
-                        println("Press Finger")
-                        fps.waitForFinger()
-                bret = fps.captureFinger(True)
-                if not bret
-                        errCount = 0
-                        fps.enroll1()
-                        clrscr()
-                        println("Captured Image 1/3")
-                        println("Remove Finger")
-                        fps.waitForFinger()
-                        while errCount <= 2:
-                                clrscr()
-                                println("Press Same Finger")
-                                fps.waitForFinger()
-                                println("Reading Finger")
-                                bret = fps.CaptureFinger(True)
-                                if not bret:
-                                        errCount = 0
-                                        fps.enroll2()
-                                        clrscr()
-                                        println("Captured Image 2/3")
-                                        println("Remove finger")
-                                        fps.waitForFinger()
-                                        while errCount <= 2:
-                                                clrscr()
-                                                println("Press Same Finger")
-                                                fps.waitForFinger()
-                                                println("Reading Finger")
-                                                bret = fps.CaptureFinger(True)
-                                                if not bret:
-                                                        errCount = 0
-                                                        iret = fps.enroll3()
-                                                        clrscr()
-                                                        println("Captured Image 3/3")
-                                                        println("Remove finger")
-                                                        fps.waitForFinger()
-                                                        clrscr()
-                                                        if iret == 0:
-                                                                println("Enroll Successfull")
-                                                                errCount = 3
-                                                                time.sleep(1)
-                                                        else
-                                                                clrscr()
-                                                                println("Error code :" + String(iret))
-                                                                switch (iret)
-                                                                        case 1 : println("Error")
-                                                                        break
-                                                                        case 2 : println("Bad Finger")
-                                                                        break
-                                                                        case 3 : println("Duplicate Finger")
-                                                                        break
-                                                                time.sleep(5)
-                                                                errCount = 4
-                        
-            
-                                                else
-                                                        clrscr()
-                                                        println("Failed - 3rd Image")
-                                                        println("Wet/Dry/Dirty Finger")
-                                                        println("Cannot be Imaged")
-                                                        println("Please Try Again")
-                                                        errCount++
-                                                        time.sleep(3)
-                                else
-                                        clrscr()
-                                        println("Failed - 2nd Image")
-                                        println("Wet/Dry/Dirty Finger")
-                                        println("Cannot be Imaged")
-                                        println("Please Try Again")
-                                        errCount++
-                                        time.sleep(3)
-                                        clrscr()
-                                        println("Press Finger Agian")
-                else
-                        clrscr()
-                        println("Failed - 1st Image")
-                        println("Wet/Dry/Dirty Finger")
-                        println("Cannot be Imaged")
-                        println("Please Try Again")
-                        errCount++
-                        time.sleep(3)
-        if not errCount == 3:
-                clrscr()
-                println("Enrollment Failed")
-                println("Image Capture Failed")
-                println("Inform Lab Teacher")
-                time.sleep(5)
-def clrscr():
-        lcd.clrscr()
+    while not fps.open:
+	fps.open()
 def println(text):
-        lcd.println(text)
+	lcd.println(text)
+def printline(text,line):
+	lcd.println(text,line)
+def clrscr():
+	lcd.clrscr()
+def identify():
+    fps.waitForFinger()
+    id = fps.identify()
+    if int(id)==200:
+        clrscr()
+        return "Finger not found"
+        beep(2)
+    else:
+        return "PRN:"+get_prn(id)
+
+def enroll(id):
+    print id
+    print fps.checkEnrolled(id)
+    print fps.enroll(id)
+    errFCount=0
+    while errFCount<=2:
+	errCount=0
+        while errCount<=2:
+	    lcd.clrscr()
+	    lcd.println("Press Finger")
+	    fps.waitForFinger()
+	    if fps.captureFinger(True):
+                print fps.enroll1()
+	        lcd.clrscr()
+	        lcd.println("Image Captured 1/3")
+                lcd.println("Remove finger")
+	        fps.waitForRemove()
+	        lcd.clrscr()
+		break
+	    else:
+	 	errCount= errCount+1
+	        lcd.clrscr()
+	 	lcd.println("Failed - 1st Image")
+ 	 	lcd.println("Dry/Wet/Dirty Finger")
+                lcd.println("Please Try Again")
+	 	lcd.println("Trial : "+str(errCount))
+	    	sleep(1000)
+	errCount=0
+	while errCount<=2:
+	    lcd.clrscr()
+	    lcd.println("Press Finger Again")
+	    fps.waitForFinger()
+	    if fps.captureFinger(True):
+                print fps.enroll2()
+	        lcd.clrscr()
+	        lcd.println("Image Captured 2/3")
+                lcd.println("Remove finger")
+	        fps.waitForRemove()
+	        lcd.clrscr()
+	        break
+	    else:
+		errCount= errCount+1
+	        lcd.clrscr()
+		lcd.println("Failed - 2nd Image")
+ 		lcd.println("Dry/Wet/Dirty Finger")
+                lcd.println("Please Try Again")
+		lcd.println("Trial : "+str(errCount))
+		sleep(1000)
+	errCount=0
+	while errCount<=2:
+	    lcd.clrscr()
+	    lcd.println("Press Finger Again")
+	    fps.waitForFinger()
+	    if fps.captureFinger(True):
+                print fps.enroll3()
+	        lcd.clrscr()
+	        lcd.println("Image Captured 3/3")
+                lcd.println("Remove finger")
+	        fps.waitForRemove()
+		errFCount=4
+		break
+	    else:
+		errCount= errCount+1
+	        lcd.clrscr()
+		lcd.println("Failed - 3rd Image")
+ 		lcd.println("Dry/Wet/Dirty Finger")
+                lcd.println("Please Try Again")
+		lcd.println("Trial : "+str(errCount))
+		sleep(1000)
+    fps.setLED(False)
 def beep(sec):
         BuzzPin =36
         GPIO.setmode(GPIO.BOARD)
