@@ -12,13 +12,28 @@
 #Paste '@reboot python /home/pi/cerberus-rpi/boot.py >/home/pi/bootlog/cronlog 2>&1' at the end of the file
 
 from functions import *
+setup()
 println("Boot Complete")
-sleep(3000)
 println("Getting Ready")
-enroll(194)
+sleep(1)
+id = 8
+name = 'Ebenezer'
+response = enroll(id)
+if response:
+    clrscr()
+    println("Enroll Successfull")
+    set_map_prn(id,name)
+    sleep(1000)
+else:
+    clrscr()
+    println("Enroll Unsuccessfull")
+    sleep(1000)
 while True:
     clrscr()
+    println('Identify Finger')
     println("Press Finger")
-    println(identify())
+    response = identify()
+    clrscr()
+    println(response)
     println("Waiting 1 sec")
     sleep(1000)
