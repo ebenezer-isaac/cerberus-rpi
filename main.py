@@ -12,11 +12,10 @@
 #Paste '@reboot python /home/pi/cerberus-rpi/boot.py >/home/pi/bootlog/cronlog 2>&1' at the end of the file
 
 from functions import *
+println('Project Cerberus')
+println('The')
+println('Attndance Initiative')
 setup()
-beep(5)
-blinkalt(10)
-println("Boot Complete")
-println("Getting Ready")
 sleep(1)
 id = 23
 name = 'Meghna Maam 2'

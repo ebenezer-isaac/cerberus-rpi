@@ -1,6 +1,7 @@
 import os, sys
 import serial
 from base import *
+import time
 class FingerPi():
     def __init__(self,port = '/dev/ttyAMA0',baudrate = 9600,device_id = 0x01,timeout = 2,*args, **kwargs):
         self.port = port
@@ -109,11 +110,11 @@ class FingerPi():
     def waitForFinger(self):
 	self.setLED(True)
 	while self.isPressFinger()==False:
-	    pass
+	    time.sleep(0.2)
     def waitForRemove(self):
 	self.setLED(True)
 	while self.isPressFinger()==True:
-	    pass
+	    time.sleep(0.2)
 	self.setLED(False)
     def identify(self):
 	self.waitForFinger()

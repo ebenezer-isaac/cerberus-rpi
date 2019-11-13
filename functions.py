@@ -1,20 +1,32 @@
 import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO, threading
 from drivers.fingerpi import FingerPi
 from drivers.lcd import LCD
-#from drivers.rtc import RTC
+from drivers.rtc import RTC
+from drivers.keypad import KPD
 fps = FingerPi()
 lcd = LCD()
-#rtc = RTC()
+rtc = RTC()
+kpd = KPD()
 host = "192.168.0.5"
 user = "root"
 password = "cerberus"
 database = "cerberus"
 labid = 1
+BuzzPin =36
+GreenPin = 26
+RedPin = 18
+def setup():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setwarnings(False)
+    GPIO.setup(BuzzPin, GPIO.OUT)
+	GPIO.setup(GreenPin, GPIO.OUT)
+	GPIO.setup(RedPin, GPIO.OUT)
+    while not fps.open:
+		fps.open()
+
 def sleep(milsec):
     time.sleep(milsec/1000)
-def setup():
-    while not fps.open:
-	fps.open()
+
 def println(text):
 	lcd.println(text)
 def printline(text,line):
@@ -112,50 +124,57 @@ def enroll(id):
     fps.setLED(False)
     return response
 def beep(sec):
-        BuzzPin =36
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
-        GPIO.setup(BuzzPin, GPIO.OUT)
         count = 1
         while count<=sec:
                 GPIO.output(BuzzPin,True)
+				GPIO.output(GreenPin,True)
+				GPIO.output(RedPin,False)
                 time.sleep(0.1)
                 GPIO.output(BuzzPin,False)
+				GPIO.output(GreenPin,False)
+				GPIO.output(RedPin,True)
                 time.sleep(0.1)
                 count = count+1
         GPIO.output(BuzzPin,False)
+		GPIO.output(GreenPin,False)
+		GPIO.output(RedPin,False)
+		
 def blinkg(sec):
-        BuzzPin = 26
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
-        GPIO.setup(BuzzPin, GPIO.OUT)
         count = 1
         while count<=sec:
-                GPIO.output(BuzzPin,True)
+                GPIO.output(GreenPin,True)
                 time.sleep(0.1)
-                GPIO.output(BuzzPin,False)
+                GPIO.output(GreenPin,False)
                 time.sleep(0.1)
                 count = count+1
-        GPIO.output(BuzzPin,False)
+        GPIO.output(GreenPin,False)
 def blinkr(sec):
-        BuzzPin = 18
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
-        GPIO.setup(BuzzPin, GPIO.OUT)
-        count = 1
-        while count<=sec:
-                GPIO.output(BuzzPin,True)
-                time.sleep(0.1)
-                GPIO.output(BuzzPin,False)
-                time.sleep(0.1)
-                count = count+1
-        GPIO.output(BuzzPin,False)
+    count = 1
+    while count<=sec:
+        GPIO.output(RedPin,True)
+        time.sleep(0.1)
+        GPIO.output(RedPin,False)
+        time.sleep(0.1)
+        count = count+1
+    GPIO.output(RedPin,False)
 def blinkalt(sec):
     count = 1
     while count<=sec:
-	blinkg(1)
-	blinkr(1)
-	count = count+1
+		blinkg(1)
+		blinkr(1)
+		count = count+1
+def warning(sec)
+	count = 1
+        while count<=sec:
+            GPIO.output(RedPin,True)
+			GPIO.output(BuzzPin,True)
+            time.sleep(0.1)
+            GPIO.output(RedPin,False)
+			GPIO.output(BuzzPin,False)
+            time.sleep(0.1)
+            count = count+1
+        GPIO.output(RedPin,False)
+		GPIO.output(BuzzPin,False)
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
     cur = myconn.cursor()
@@ -401,3 +420,48 @@ def set_template(template_name,fps_id):
     response = fps.setTemplate(id,str(template_data))
     print response
     print 'Templates written to fps successfully'
+
+def power_save():
+	LedPin1 = 11
+	LedPin2 = 12
+        fade = 20
+	GPIO.setmode(GPIO.BOARD)
+	GPIO.setwarnings(False)
+	GPIO.setup(LedPin1, GPIO.OUT)
+	GPIO.setup(LedPin2, GPIO.OUT)
+	fps.setLED(True)
+	count = 0
+        p1 = GPIO.PWM(LedPin1, 1000)
+        p2 = GPIO.PWM(LedPin2, 1000)
+        p1.start(0)
+        p2.start(0)
+	while not fps.isPressFinger():
+	        while not fps.isPressFinger() and count<=3:
+	                GPIO.output(LedPin2,True)
+	                GPIO.output(LedPin1,False)
+	                time.sleep(0.2)
+	                GPIO.output(LedPin1,True)
+	                GPIO.output(LedPin2,False)
+	                time.sleep(0.2)
+	                count = count+1
+	        GPIO.output(LedPin1,False)
+	        GPIO.output(LedPin2,False)
+	        count = 0
+	        while not fps.isPressFinger() and count<=2:
+	                b0 = 0
+	                b1 = 100
+	                while b0 <=100 and b1 >= 0 and not fps.isPressFinger():
+	                        p1.ChangeDutyCycle(b0)
+	                        p2.ChangeDutyCycle(b1)
+	                        b1 -= fade
+	                        b0 += fade
+	                        time.sleep(0.1)
+	                b0=100
+	                b1=0
+	                while b0 >= 0 and b1 <=100 and not fps.isPressFinger():
+	                        p1.ChangeDutyCycle(b0)
+	                        p2.ChangeDutyCycle(b1)
+	                        b1 += fade;
+	                        b0 -= fade;
+	                        time.sleep(0.1)
+	                count = count+1
