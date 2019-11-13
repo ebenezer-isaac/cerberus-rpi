@@ -26,10 +26,10 @@ def identify():
     id = fps.identify()
     if int(id)==200:
         clrscr()
-        return "Finger not found"
         beep(2)
+        return "Finger not found"
     else:
-        return "PRN:"+get_map_prn(id)
+        return "Name : "+get_map_prn(id)
 
 def enroll(id):
     response = False
@@ -121,9 +121,41 @@ def beep(sec):
                 GPIO.output(BuzzPin,True)
                 time.sleep(0.1)
                 GPIO.output(BuzzPin,False)
-                time.sleep(0.2)
+                time.sleep(0.1)
                 count = count+1
         GPIO.output(BuzzPin,False)
+def blinkg(sec):
+        BuzzPin = 26
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
+        GPIO.setup(BuzzPin, GPIO.OUT)
+        count = 1
+        while count<=sec:
+                GPIO.output(BuzzPin,True)
+                time.sleep(0.1)
+                GPIO.output(BuzzPin,False)
+                time.sleep(0.1)
+                count = count+1
+        GPIO.output(BuzzPin,False)
+def blinkr(sec):
+        BuzzPin = 18
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
+        GPIO.setup(BuzzPin, GPIO.OUT)
+        count = 1
+        while count<=sec:
+                GPIO.output(BuzzPin,True)
+                time.sleep(0.1)
+                GPIO.output(BuzzPin,False)
+                time.sleep(0.1)
+                count = count+1
+        GPIO.output(BuzzPin,False)
+def blinkalt(sec):
+    count = 1
+    while count<=sec:
+	blinkg(1)
+	blinkr(1)
+	count = count+1
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
     cur = myconn.cursor()

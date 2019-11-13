@@ -13,11 +13,13 @@
 
 from functions import *
 setup()
+beep(5)
+blinkalt(10)
 println("Boot Complete")
 println("Getting Ready")
 sleep(1)
-id = 8
-name = 'Ebenezer'
+id = 23
+name = 'Meghna Maam 2'
 response = enroll(id)
 if response:
     clrscr()
