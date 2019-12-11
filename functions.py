@@ -2,12 +2,10 @@ import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO
 from drivers.fingerpi import FingerPi
 from drivers.lcd import LCD
 from drivers.rtc import RTC
-from drivers.keypad import KPD
 fps = FingerPi()
 lcd = LCD()
 rtc = RTC()
-kpd = KPD()
-host = "192.168.0.5"
+host = "192.168.0.7"
 user = "root"
 password = "cerberus"
 database = "cerberus"
@@ -15,17 +13,45 @@ labid = 1
 BuzzPin =36
 GreenPin = 26
 RedPin = 18
+MATRIX = [
+[1,2,3,'A'],
+[4,5,6,'B'],
+[7,8,9,'C'],
+['*',0,'#','D']
+]
+COL = [32,37,33,31]
+ROW = [29,15,13,11]
+
 def setup():
     GPIO.setmode(GPIO.BOARD)
     GPIO.setwarnings(False)
     GPIO.setup(BuzzPin, GPIO.OUT)
-	GPIO.setup(GreenPin, GPIO.OUT)
-	GPIO.setup(RedPin, GPIO.OUT)
+    GPIO.setup(GreenPin, GPIO.OUT)
+    GPIO.setup(RedPin, GPIO.OUT)
     while not fps.open:
-		fps.open()
+        fps.open()
+    for j in range(4):
+        GPIO.setup(COL[j], GPIO.OUT)
+        GPIO.output(COL[j],1)
+    for i in range(4):
+        GPIO.setup(ROW[i],GPIO.IN, pull_up_down = GPIO.PUD_UP)
+    beep(4);
 
 def sleep(milsec):
     time.sleep(milsec/1000)
+
+def getKeyPress():
+    key = ''
+    while key == '':
+        for  j in range(4):
+            GPIO.output(COL[j],0)
+            for i in range(4):
+                if GPIO.input(ROW[i])==0:
+                    key = MATRIX[i][j]
+                    while (GPIO.input(ROW[i])==0):
+                        time.sleep(0.2)
+                    return key
+            GPIO.output(COL[j],1)
 
 def println(text):
 	lcd.println(text)
@@ -127,17 +153,17 @@ def beep(sec):
         count = 1
         while count<=sec:
                 GPIO.output(BuzzPin,True)
-				GPIO.output(GreenPin,True)
-				GPIO.output(RedPin,False)
+		GPIO.output(GreenPin,True)
+		GPIO.output(RedPin,False)
                 time.sleep(0.1)
                 GPIO.output(BuzzPin,False)
-				GPIO.output(GreenPin,False)
-				GPIO.output(RedPin,True)
+		GPIO.output(GreenPin,False)
+		GPIO.output(RedPin,True)
                 time.sleep(0.1)
                 count = count+1
         GPIO.output(BuzzPin,False)
-		GPIO.output(GreenPin,False)
-		GPIO.output(RedPin,False)
+	GPIO.output(GreenPin,False)
+	GPIO.output(RedPin,False)
 		
 def blinkg(sec):
         count = 1
@@ -163,18 +189,18 @@ def blinkalt(sec):
 		blinkg(1)
 		blinkr(1)
 		count = count+1
-def warning(sec)
+def warning(sec):
 	count = 1
         while count<=sec:
             GPIO.output(RedPin,True)
-			GPIO.output(BuzzPin,True)
+   	    GPIO.output(BuzzPin,True)
             time.sleep(0.1)
             GPIO.output(RedPin,False)
-			GPIO.output(BuzzPin,False)
+	    GPIO.output(BuzzPin,False)
             time.sleep(0.1)
             count = count+1
         GPIO.output(RedPin,False)
-		GPIO.output(BuzzPin,False)
+	GPIO.output(BuzzPin,False)
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
     cur = myconn.cursor()
