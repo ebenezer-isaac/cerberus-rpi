@@ -1,4 +1,4 @@
-import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO, threading
+import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO, datetime
 from datetime import date
 from drivers.fingerpi import FingerPi
 from drivers.lcd import LCD
@@ -10,6 +10,10 @@ host = "192.168.0.7"
 user = "root"
 password = "cerberus"
 database = "cerberus"
+print("trying for connection")
+#myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
+#cur = myconn.cursor()
+print("got connection")
 labid = 1
 BuzzPin =36
 GreenPin = 26
@@ -128,7 +132,7 @@ def enroll(id):
 	    lcd.println("Trial : "+str(errFCount))
     fps.setLED(False)
     return response
-	
+
 def print_enrolled():
     lcd.clrscr()
     t = rtc.getTime()
@@ -142,16 +146,6 @@ def print_enrolled():
  		print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
 		found = found+1
 	i=i+1
-
-import mysql.connector, subprocess, time, json, os, datetime, calendar,datetime
-from datetime import date
-host = "localhost"
-user = "root"
-password = ""
-database = "cerberus"
-labid=1
-myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
-cur = myconn.cursor()
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
     timeid = 0
@@ -305,7 +299,7 @@ def sync_timetable(week=0,year=0):
                     file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","w")
                     file.write("")
                     file.close()
-                    if result:    
+                    if result:
                         file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","a")
                         for y in result:
                             file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
@@ -324,7 +318,7 @@ def sync_timetable(week=0,year=0):
             file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
             file.write("")
             file.close()
-            if result:    
+            if result:
                 file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
                 for y in result:
                     file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
@@ -433,9 +427,9 @@ def set_templates(studs):
         #set_template(id,x)
         #set_map_prn(id,x)
         id=id+1
-        
+
 def sync_templates ():
-    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
     cur = myconn.cursor()
     text = open("./logid.txt","r")
     logid =str(text.read()).strip()
@@ -531,34 +525,34 @@ def sync_templates ():
     text = open("./logid.txt","w")
     text.write(str(logid))
     text.close()
-	
+
 #---------------Utilities---------------------------------------
 
 def get_map_prn(id):
         map = json.load(open("./docs/map.json"))
         prn = map[str(id)]
         return prn
-		
+
 def set_map_prn(id,prn):
         map = json.load(open("./docs/map.json"))
         map[str(id)]=prn
         with open("./docs/map.json", 'w') as file:
 	        file.write(json.dumps(map, sort_keys=True))
-			
+
 def set_template(template_name,fps_id):
-    text = open("./templates/"+str(template_name)+".txt","rb") 
-    template_data = text.readlines() 
+    text = open("./templates/"+str(template_name)+".txt","rb")
+    template_data = text.readlines()
     text.close()
     response = fps.setTemplate(id,str(template_data))
     print response
     print 'Templates written to fps successfully'
-			
+
 def println(text):
 	lcd.println(text)
-	
+
 def printline(text,line):
 	lcd.println(text,line)
-	
+
 def clrscr():
 	lcd.clrscr()
 
@@ -568,7 +562,7 @@ def sleep(milsec):
 def print_time(line):
         t = time.time()
         lcd.println(str(rtc.hour)+':'+str(rtc.min)+':'+str(rtc.sec)+' '+str(rtc.date)+'/'+str(rtc.month)+'/'+str(rtc.year),3)
-	
+
 def getKeyPress():
     for  j in range(4):
         GPIO.output(COL[j],0)
@@ -578,7 +572,7 @@ def getKeyPress():
                     time.sleep(0.2)
                 return MATRIX[i][j]
         GPIO.output(COL[j],1)
-			
+
 def getKey():
     key = ''
     while key == '':
@@ -591,7 +585,7 @@ def getKey():
                         time.sleep(0.2)
                     return key
             GPIO.output(COL[j],1)
-				
+
 #-------------------------Lighting------------------------------------
 
 def beep(sec):
@@ -609,7 +603,7 @@ def beep(sec):
         GPIO.output(BuzzPin,False)
 	GPIO.output(GreenPin,False)
 	GPIO.output(RedPin,False)
-		
+
 def blinkg(sec):
         count = 1
         while count<=sec:
@@ -619,7 +613,7 @@ def blinkg(sec):
                 time.sleep(0.1)
                 count = count+1
         GPIO.output(GreenPin,False)
-		
+
 def blinkr(sec):
     count = 1
     while count<=sec:
@@ -629,14 +623,14 @@ def blinkr(sec):
         time.sleep(0.1)
         count = count+1
     GPIO.output(RedPin,False)
-	
+
 def blinkalt(sec):
     count = 1
     while count<=sec:
 		blinkg(1)
 		blinkr(1)
 		count = count+1
-		
+
 def warning(sec):
 	count = 1
         while count<=sec:
@@ -649,7 +643,7 @@ def warning(sec):
             count = count+1
         GPIO.output(RedPin,False)
 	GPIO.output(BuzzPin,False)
-	
+
 def light_show():
 	LedPin1 = 11
 	LedPin2 = 12
@@ -668,4 +662,3 @@ def light_show():
                 time.sleep(0.5)
         GPIO.output(LedPin1,False)
         GPIO.output(LedPin2,False)
-	
