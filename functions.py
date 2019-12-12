@@ -1,4 +1,5 @@
 import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO, threading
+from datetime import date
 from drivers.fingerpi import FingerPi
 from drivers.lcd import LCD
 from drivers.rtc import RTC
@@ -37,28 +38,6 @@ def setup():
         GPIO.setup(ROW[i],GPIO.IN, pull_up_down = GPIO.PUD_UP)
     beep(4);
 
-def sleep(milsec):
-    time.sleep(milsec/1000)
-
-def getKeyPress():
-    key = ''
-    while key == '':
-        for  j in range(4):
-            GPIO.output(COL[j],0)
-            for i in range(4):
-                if GPIO.input(ROW[i])==0:
-                    key = MATRIX[i][j]
-                    while (GPIO.input(ROW[i])==0):
-                        time.sleep(0.2)
-                    return key
-            GPIO.output(COL[j],1)
-
-def println(text):
-	lcd.println(text)
-def printline(text,line):
-	lcd.println(text,line)
-def clrscr():
-	lcd.clrscr()
 def identify():
     fps.waitForFinger()
     id = fps.identify()
@@ -149,6 +128,472 @@ def enroll(id):
 	    lcd.println("Trial : "+str(errFCount))
     fps.setLED(False)
     return response
+	
+def print_enrolled():
+    lcd.clrscr()
+    t = rtc.getTime()
+    lcd.println(t)
+    count = fps.countEnrolled()
+    i = 0
+    print 'Total number of enrolled fingerprints = '+str(count)
+    found=0
+    while (found<count):
+    	if fps.checkEnrolled(i):
+ 		print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
+		found = found+1
+	i=i+1
+
+import mysql.connector, subprocess, time, json, os, datetime, calendar,datetime
+from datetime import date
+host = "localhost"
+user = "root"
+password = ""
+database = "cerberus"
+labid=1
+myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+cur = myconn.cursor()
+
+def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
+    timeid = 0
+    try:
+        sql="SELECT timeID from timedata where time = '"+str(time)+"'"
+        cur.execute(sql)
+        result = cur.fetchall()
+        for x in result:
+            timeid=x[0]
+        if timeid==0:
+            try:
+                sql="insert into timedata values(null,'"+str(time)+"')"
+                val = (time)
+                cur.execute(sql,val)
+                return get_timeId(time)
+            except mysql.connector.Error as err:
+                print(format(err))
+                return 0
+    except mysql.connector.Error as err:
+        print(format(err))
+        return 0
+    return timeid
+
+def get_dateId(date=date.today()):
+    dateid = 0
+    try:
+        sql="SELECT dateID from datedata where date = '"+str(date)+"'"
+        cur.execute(sql)
+        result = cur.fetchall()
+        for x in result:
+            dateid=x[0]
+        if dateid==0:
+            try:
+                sql="insert into datedata values(null,'"+str(date)+"')"
+                cur.execute(sql)
+                return get_dateId(date)
+            except mysql.connector.Error as err:
+                print(format(err))
+                return 0
+    except mysql.connector.Error as err:
+        print(format(err))
+    return dateid
+
+def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datetime.now().year):
+    weekid = 0
+    try:
+        sql="SELECT weekID from week where week = "+str(week)+" and year = "+str(year)
+        cur.execute(sql)
+        result = cur.fetchall()
+        for x in result:
+            weekid=x[0]
+        if weekid==0:
+            try:
+                sql="insert into week values(null,"+str(week)+","+str(year)+")"
+                cur.execute(sql)
+                return get_weekId(week,year)
+            except mysql.connector.Error as err:
+                print(format(err))
+                return 0
+    except mysql.connector.Error as err:
+        print(format(err))
+        return 0
+    return weekid
+
+def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
+    with open('./slots.txt', "r") as fp:
+        for x in fp.readlines():
+            x = x.split(",")
+            x[2] = x[2].replace("\n","")
+            if x[1]<time<x[2]:
+                return x[0]
+    return 0
+
+def get_scheduleId(slotid=get_slotId(),week=datetime.datetime.now().isocalendar()[1],year=datetime.datetime.now().year,dayid=datetime.datetime.now().weekday()+1):
+    with open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
+        for x in fp.readlines():
+            x = x.split(",")
+            x[5] = x[5].replace("\n","")
+            if x[1]==str(slotid) and x[2]==str(dayid):
+                return x[0]
+    return 0
+
+def get_next_scheduleId():
+    week=datetime.datetime.now().isocalendar()[1]
+    year=datetime.datetime.now().year
+    dayid=datetime.datetime.now().weekday()+1
+    today=[]
+    with open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
+        for x in fp.readlines():
+            x = x.split(",")
+            x[5] = x[5].replace("\n","")
+            print(x)
+            if x[2]==str(dayid):
+                temp = []
+                temp.append(x[1])
+                temp.append(x[3])
+                temp.append(x[4])
+                temp.append(x[5])
+                today.append(temp)
+    if len(today)==0:
+        return 'No Labs Today'
+    else:
+        today.sort()
+        time=datetime.datetime.now().strftime("%H:%M:%S")
+        slots=[]
+        with open('./slots.txt', "r") as fp:
+            for x in fp.readlines():
+                x = x.split(",")
+                x[2] = x[2].replace("\n","")
+                slots.append(x)
+        slots.sort()
+        for x in today:
+            slotid=int(x[0])
+            if slots[slotid][1]>time:
+                return 'Next Lab at '+str(slots[slotid][1])  
+        return 'All Labs Over'
+
+def sync_attendance():
+    with open('./attendance.txt', "r") as fp:
+        for i in fp.readlines():
+            attendance = i.strip()
+            attendance = attendance.split(",")
+            timeid=get_timeId(attendance[1])
+            scheduleid=attendance[0]
+            if len(attendance[2])==16:
+                try:
+                    sql="insert into `attendance` values(null,'"+str(attendance[2])+"',"+str(scheduleid)+","+str(timeid)+")"
+                    print(sql)
+                    cur.execute(sql)
+                except mysql.connector.Error as err:
+                    print(format(err))
+            else:
+                try:
+                    sql="insert into `facultytimetable` values("+str(scheduleid)+","+str(attendance[2])+")"
+                    print(sql)
+                    cur.execute(sql)
+                except mysql.connector.Error as err:
+                    print(format(err))
+
+def sync_timetable(week=0,year=0):
+    if week==0 and year==0:
+        try:
+            sql = "select weekid,week,year from week order by weekid"
+            cur.execute(sql)
+            result = cur.fetchall()
+            for x in result:
+                try:
+                    sql = "select timetable.scheduleID, slot.slotId, timetable.dayID, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(x[0])+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
+                    cur.execute(sql)
+                    result = cur.fetchall()
+                    file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","w")
+                    file.write("")
+                    file.close()
+                    if result:    
+                        file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","a")
+                        for y in result:
+                            file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
+                        file.close()
+                except mysql.connector.Error as err:
+                    print(format(err))
+        except mysql.connector.Error as err:
+            print(format(err))
+    elif week==1 and year==1:
+        week= datetime.datetime.now().isocalendar()[1]
+        year = datetime.datetime.now().year
+        try:
+            sql = "select timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
+            cur.execute(sql)
+            result = cur.fetchall()
+            file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
+            file.write("")
+            file.close()
+            if result:    
+                file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
+                for y in result:
+                    file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
+                file.close()
+        except mysql.connector.Error as err:
+            print(format(err))
+    else:
+        try:
+            sql = "select timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
+            cur.execute(sql)
+            result = cur.fetchall()
+            file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
+            file.write("")
+            file.close()
+            if result:    
+                file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
+                for y in result:
+                    file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
+                file.close()
+        except mysql.connector.Error as err:
+            print(format(err))
+
+def sync_slots():
+    try:
+        sql = "select * from slot order by startTime"
+        cur.execute(sql)
+        result = cur.fetchall()
+        if result:
+            file = open("./slots.txt","w")
+            file.write("")
+            file.close()
+            file = open("./slots.txt","a")
+            for x in result:
+                file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
+            file.close()
+    except mysql.connector.Error as err:
+        print(format(err))
+
+def get_map_prn(id):
+        map = json.load(open("./map.json"))
+        prn = map[str(id)]
+        return prn
+
+def set_map_prn(id,prn):
+        map = json.load(open("./map.json"))
+        map[str(id)]=prn
+        with open("./map.json", 'w') as file:
+            file.write(json.dumps(map, sort_keys=True))
+
+def sync_stud_sub():
+    try:
+        sql = "select * from studentsubject order by prn"
+        cur.execute(sql)
+        result = cur.fetchall()
+        if result:
+            file = open("./stud-sub.txt","w")
+            file.write("")
+            file.close()
+            file = open("./stud-sub.txt","a")
+            for x in result:
+                file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
+            file.close()
+    except mysql.connector.Error as err:
+        print(format(err))
+
+def att_valid(prn,subjectid,batchid):
+    with open('./stud-sub.txt', "r") as fp:
+        for x in fp.readlines():
+            x = x.split(",")
+            x[2] = x[2].replace("\n","")
+            if x[0]==str(prn) and x[1]==str(subjectid) and x[2]==str(batchid):
+                return True
+    return False
+att_valid(2017033800104112,'BCA1538',2)
+
+def sync_stud_det():
+    try:
+        sql = "select  rollcall.classID, rollcall.rollNo, student.prn from student inner join rollcall on student.PRN = rollcall.PRN"
+        cur.execute(sql)
+        result = cur.fetchall()
+        if result:
+            file = open("./stud-det.txt","w")
+            file.write("")
+            file.close()
+            file = open("./stud-det.txt","a")
+            for x in result:
+                file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
+            file.close()
+    except mysql.connector.Error as err:
+        print(format(err))
+
+def get_stud_sub_list(subjectid, batchid):
+    studs=[]
+    with open('./stud-sub.txt', "r") as fp:
+        for x in fp.readlines():
+            x = x.split(",")
+            x[2] = x[2].replace("\n","")
+            if x[1]==str(subjectid) and x[2]==str(batchid):
+                studs.append(x[0])
+    return studs
+
+def set_templates(studs):
+    id=0
+    #delete templates till 150
+    for x in studs:
+        #set_template(id,x)
+        #set_map_prn(id,x)
+        id=id+1
+        
+def sync_templates ():
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
+    cur = myconn.cursor()
+    text = open("./logid.txt","r")
+    logid =str(text.read()).strip()
+    text.close()
+    sync = []
+    with open('./sync.txt', "r") as fp:
+        for i in fp.readlines():
+            tmp = i.strip()
+            tmp = tmp.split(",")
+            try:
+                sync.append((tmp[0], tmp[1], tmp[2], tmp[3]))
+            except:
+                pass
+    try:
+        sql="SELECT logID, (select datedata.date from datedata,log where log.dateID=datedata.dateID) as date ,(select timedata.time from timedata,log where log.timeID=timedata.timeID)as time, comments FROM `log` where logTypeID=1 and logID>"+str(logid)
+        print(sql)
+        val = (logid)
+        cur.execute(sql,val)
+        result = cur.fetchall()
+        for x in result:
+            logid=x[0]
+            date = str(x[1]).replace("-","/")
+            time = x[2]
+            comments = x[3]
+            log = str(date)+' '+str(time)+','+str(comments).replace(' ',',')+',db'
+            log = log.split(',')
+            sync.append((log[0],log[1],log[2],log[3]))
+    except mysql.connector.Error as err:
+        print(format(err))
+    sync.sort()
+    print(sync)
+    for x in sync:
+        tmp = str(x[0]).split(" ")
+        date = tmp[0]
+        time = tmp[1]
+        dateid = get_dateId(date)
+        timeid = get_timeId(time)
+        template_name = x[1]
+        temp = str(template_name).split('-')
+        user_id = temp[0]
+        template_id = temp[1]
+        status = x[2]
+        source = x[3]
+        if source=='rpi':
+            if status=='delete':
+                if len(user_id)==16:
+                    sql="delete * from studentfingerprint where prn='"+str(user_id)+"' and templateID="+str(template_id)
+                else:
+                    sql="delete * from facultyfingerprint where facultyID="+str(user_id)+" and templateID="+str(template_id)
+                try:
+                    cur.execute(sql)
+                    sql="insert into log values(null,1,"+str(dateid)+",'"+str(timeid)+","+str(template_name)+" delete')"
+                    cur.execute(sql)
+                except mysql.connector.Error as err:
+                    print(format(err))
+            elif status=='enroll':
+                if len(user_id)==16:
+                   sql="insert into studentfingerprint values('"+str(user_id)+"', "+str(template_id)+", "+str(template)+")"
+                else:
+                   sql="insert into facultyfingerprint values("+str(user_id)+", "+str(template_id)+", "+str(template)+")"
+                text = open('/templates/'+str(template_name)+'.txt','rb')
+                template = text.read()
+                text.close()
+                try:
+                    cur.execute(sql)
+                    sql="insert into log values(null,1,"+str(dateid)+",'"+str(timeid)+","+str(template_name)+" enroll')"
+                    cur.execute(sql)
+                except mysql.connector.Error as err:
+                    print(format(err))
+        elif source=='db':
+            if status=='delete':
+                os.remove('/templates/'+str(template_name)+'.txt')
+                map = json.load(open("./map.json"))
+                for fps_id in map:
+                    if map[id]==str(template_name):
+                        fps.DeleteId(id)
+                        mps[id]='0'
+            elif status=='enroll':
+                if len(user_id)==16:
+                    sql="select template from studentfingerprint values where prn='"+str(user_id)+"' and templateID="+str(template_id)
+                else:
+                    sql="select template from facultyfingerprint values where facultyID="+str(user_id)+" and templateID="+str(template_id)
+                try:
+                    cur.execute(sql)
+                    fingerprints = cur.fetchall()
+                    for y in result:
+                        template=y[0]
+                        text = open('/templates/'+str(template_name)+'.txt','wb')
+                        text.write(str(template))
+                        text.close()
+                except:
+                    myconn.rollback()
+    text = open("./logid.txt","w")
+    text.write(str(logid))
+    text.close()
+	
+#---------------Utilities---------------------------------------
+
+def get_map_prn(id):
+        map = json.load(open("./docs/map.json"))
+        prn = map[str(id)]
+        return prn
+		
+def set_map_prn(id,prn):
+        map = json.load(open("./docs/map.json"))
+        map[str(id)]=prn
+        with open("./docs/map.json", 'w') as file:
+	        file.write(json.dumps(map, sort_keys=True))
+			
+def set_template(template_name,fps_id):
+    text = open("./templates/"+str(template_name)+".txt","rb") 
+    template_data = text.readlines() 
+    text.close()
+    response = fps.setTemplate(id,str(template_data))
+    print response
+    print 'Templates written to fps successfully'
+			
+def println(text):
+	lcd.println(text)
+	
+def printline(text,line):
+	lcd.println(text,line)
+	
+def clrscr():
+	lcd.clrscr()
+
+def sleep(milsec):
+    time.sleep(milsec/1000)
+
+def print_time(line):
+        t = time.time()
+        lcd.println(str(rtc.hour)+':'+str(rtc.min)+':'+str(rtc.sec)+' '+str(rtc.date)+'/'+str(rtc.month)+'/'+str(rtc.year),3)
+	
+def getKeyPress():
+    for  j in range(4):
+        GPIO.output(COL[j],0)
+        for i in range(4):
+            if GPIO.input(ROW[i])==0:
+                while (GPIO.input(ROW[i])==0):
+                    time.sleep(0.2)
+                return MATRIX[i][j]
+        GPIO.output(COL[j],1)
+			
+def getKey():
+    key = ''
+    while key == '':
+        for  j in range(4):
+            GPIO.output(COL[j],0)
+            for i in range(4):
+                if GPIO.input(ROW[i])==0:
+                    key = MATRIX[i][j]
+                    while (GPIO.input(ROW[i])==0):
+                        time.sleep(0.2)
+                    return key
+            GPIO.output(COL[j],1)
+				
+#-------------------------Lighting------------------------------------
+
 def beep(sec):
         count = 1
         while count<=sec:
@@ -174,6 +619,7 @@ def blinkg(sec):
                 time.sleep(0.1)
                 count = count+1
         GPIO.output(GreenPin,False)
+		
 def blinkr(sec):
     count = 1
     while count<=sec:
@@ -183,12 +629,14 @@ def blinkr(sec):
         time.sleep(0.1)
         count = count+1
     GPIO.output(RedPin,False)
+	
 def blinkalt(sec):
     count = 1
     while count<=sec:
 		blinkg(1)
 		blinkr(1)
 		count = count+1
+		
 def warning(sec):
 	count = 1
         while count<=sec:
@@ -201,222 +649,7 @@ def warning(sec):
             count = count+1
         GPIO.output(RedPin,False)
 	GPIO.output(BuzzPin,False)
-def sync_templates ():
-    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)  
-    cur = myconn.cursor()
-    text = open("./docs/log.txt","rb")
-    logid = int(str(text.read()).strip())
-    text.close()
-    sync = []
-    with open('./docs/sync.txt', "rb") as fp:
-        for i in fp.readlines():
-    	    tmp = i.strip()
-	    tmp = tmp.split(",")
-	    try:
-	        sync.append((tmp[0], tmp[1], tmp[2], tmp[3]))
-            except:
-	        pass
-    try:
-	sql="SELECT logID, (select datedata.date from datedata,log where log.dateID=datedata.dateID) as date ,(select timedata.time from timedata,log where log.timeID=timedata.timeID)as time, comments FROM `log` where logTypeID=1 and logID>"+str(logid)
-	val = (logid)
-        cur.execute(sql,val)
-	result = cur.fetchall()
-	for x in result:
-	    logid=x[0]
-            date = str(x[1]).replace("-","/")
-            time = x[2]
-            comments = x[3]
-            log = str(date)+' '+str(time)+','+str(comments).replace(' ',',')+',db'
-	    log = log.split(',')
-	    sync.append((log[0],log[1],log[2],log[3]))
-    except mysql.connector.Error as err:
-        print(format(err))
-    sync.sort()
-    for x in range(0,len(sync)):
-	tmp = str(sync[x][0]).split()
-	date = tmp[0]
-	time = tmp[1]
-	dateid = get_dateId(date)
-	timeid = get_timeId(time)
-	template_name = sync[x][1]
-        temp = str(template_name).split('-')
-        user_id = temp[0]
-        template_id = temp[1]
-	status = sync[x][2]
-	source = sync[x][3]
-        if source=='rpi':
-            if status=='delete':
-                if len(user_id)==16:
-                    sql="delete * from studentfingerprint where prn=%s and templateID=%s"
-                else:
-                    sql="delete * from facultyfingerprint where facultyID=%s and templateID=%s"
-                try:
-		    val = (user_id,template_id)
-		    cur.execute(sql,val)
-   	            sql="insert into log values(1,%s,%s,%s)"
-		    val = (dateid,timeid,template_name+' delete')
- 	   	    cur.execute(sql,val)
-                except mysql.connector.Error as err:
-                    print(format(err))
-            elif status=='enroll':
-                if len(user_id)==16:
-                   sql="insert into studentfingerprint values(%s, %s, %s)"
-                else:
-                   sql="insert into facultyfingerprint values(%s, %s,%s)"
-                text = open('/templates/'+str(template_name)+'.txt','rb')
-                template = text.read()
-                text.close()
-                try:
-                    val = (user_id,template_id,template)
-                    cur.execute(sql,val)
-   	            sql="insert into log values(1,%s,%s,%s)"
-		    val = (dateid,timeid,template_name+' enroll')
- 	   	    cur.execute(sql,val)
-                except mysql.connector.Error as err:
-                    print(format(err))
-        elif source=='db':
-            if status=='delete':
-                os.remove('/templates/'+str(template_name)+'.txt')
-                map = json.load(open("./docs/map.json"))
-		for fps_id in map:
-		    if map[id]==str(template_name):
-			fps.DeleteId(id)
-			mps[id]='0'
-	    elif status=='enroll':
-                if len(user_id)==16:
-                    sql="select template from studentfingerprint values where prn=%s and templateID=%s"
-                else:
-                    sql="select template from facultyfingerprint values where facultyID=%s and templateID=%s"
-                try:
-                    val = (user_id,template_id)
-                    cur.execute(sql,val)
-                    fingerprints = cur.fetchall()
-                    for y in result:
-                        template=y[0]
-                        text = open('/templates/'+str(template_name)+'.txt','wb')
-                        text.write(str(template))
-                        text.close()
-                except:
-                    myconn.rollback()
-    text = open("./docs/log.txt","wb")
-    text.write(str(logid))
-    text.close()
-def sync_attendance():
-    text = open("./docs/attendance.txt","r")
-    attandance = text.read()
-    text.close()
-    line = 0
-    with open('./docs/attendance.txt', "rb") as fp:
-        for i in fp.readlines():
-    	    attendance = i.strip()
-	    attendance = attendance.split(",")
-	    dateid=get_dateId(attendance[0])
-	    timeid=get_timeId(attendance[1])
-	    slotid=get_timeId(attendance[1])
-	    dayid = str(calendar.day_name[datetime.datetime(int(attendance[0][0:4]),int(attendance[0][5:7]),int(attendance[0][8:10])).weekday()]).lower()[0:3]
-	    weekid = datetime.date(int(attendance[0][0:4]),int(attendance[0][5:7]),int(attendance[0][8:10])).isocalendar()[1]
-	    scheduleid=get_scheduleid(slotid,weekid,dayid)
-	    if len(attendance[2])==16:
- 	        try:
-   	            sql="insert into attendance values(%s,%s,%s,%s)"
-		    val = (attendance[2],scheduleid,dateid,timeid)
- 	   	    cur.execute(sql,val)
-                except mysql.connector.Error as err:
-                    print(format(err))
-	    else:
- 	        try:
-   	            sql="UPDATE `facultytimetable` SET `facultyID`=%s WHERE scheduleid=%s"
-		    val = (attendance[2],scheduleid)
- 	   	    cur.execute(sql,val)
-                except mysql.connector.Error as err:
-                    print(format(err))
-def sync_timetable():
-    sql = "select slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID from timetable inner join slot on timetable.slotID = slot.slotID where timetable.labID=%s and timetable.dayID=%s and timetable.weekID=%s"
-def get_scheduleId(slotid,weekid,dayid):
-    scheduleid = 0
-    try:
-	sql="SELECT scheduleid from timetable where slotid=%s,labid=%s,weekid,dayid"
-	val = (slotid,labid,weekid,dayid)
-        cur.execute(sql,val)
-	result = cur.fetchall()
-	for x in result:
-	    return x[0]
-    except mysql.connector.Error as err:
-        print(format(err))
-def get_slotId(time):
-    slotid = 0
-    try:
-	sql="SELECT slotid from slot where endTime>%s and startTime>%s"
-	val = (time,time)
-        cur.execute(sql,val)
-	result = cur.fetchall()
-	for x in result:
-	    return x[0]
-    except mysql.connector.Error as err:
-        print(format(err))
-def get_timeId(time):
-    timeid = 0
-    try:
-	sql="SELECT timeID from timedata where time = %s"
-	val = (time)
-        cur.execute(sql,val)
-	result = cur.fetchall()
-	for x in result:
-	    timeid=x[0]
-	if timeid==0:
-	    try:
-   	        sql="insert into timedata values(%s)"
-		val = (time)
- 	   	cur.execute(sql,val)
-		return get_timeId(time)
-            except mysql.connector.Error as err:
-                print(format(err))
-    except mysql.connector.Error as err:
-        print(format(err))
-    return timeid
-def get_dateId(time):
-    dateid = 0
-    try:
-	sql="SELECT dateID from datedata where date = %s"
-	val = (date)
-        cur.execute(sql,val)
-	result = cur.fetchall()
-	for x in result:
-	    dateid=x[0]
-	if dateid==0:
-	    try:
-   	        sql="insert into datedata values(%s)"
-		val = (date)
- 	   	cur.execute(sql,val)
-		return get_dateId(date)
-            except mysql.connector.Error as err:
-                print(format(err))
-    except mysql.connector.Error as err:
-        print(format(err))
-    return dateid
-
-def print_enrolled():
-    lcd.clrscr()
-    t = rtc.getTime()
-    lcd.println(t)
-    count = fps.countEnrolled()
-    i = 0
-    print 'Total number of enrolled fingerprints = '+str(count)
-    found=0
-    while (found<count):
-    	if fps.checkEnrolled(i):
- 		print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
-		found = found+1
-	i=i+1
-def get_map_prn(id):
-        map = json.load(open("./docs/map.json"))
-        prn = map[str(id)]
-        return prn
-def set_map_prn(id,prn):
-        map = json.load(open("./docs/map.json"))
-        map[str(id)]=prn
-        with open("./docs/map.json", 'w') as file:
-	        file.write(json.dumps(map, sort_keys=True))
+	
 def light_show():
 	LedPin1 = 11
 	LedPin2 = 12
@@ -435,59 +668,4 @@ def light_show():
                 time.sleep(0.5)
         GPIO.output(LedPin1,False)
         GPIO.output(LedPin2,False)
-def print_time(line):
-        t = time.time()
-        lcd.println(str(rtc.hour)+':'+str(rtc.min)+':'+str(rtc.sec)+' '+str(rtc.date)+'/'+str(rtc.month)+'/'+str(rtc.year),3)
-
-def set_template(template_name,fps_id):
-    text = open("./templates/"+str(template_name)+".txt","rb") 
-    template_data = text.readlines() 
-    text.close()
-    response = fps.setTemplate(id,str(template_data))
-    print response
-    print 'Templates written to fps successfully'
-
-def power_save():
-	LedPin1 = 11
-	LedPin2 = 12
-        fade = 20
-	GPIO.setmode(GPIO.BOARD)
-	GPIO.setwarnings(False)
-	GPIO.setup(LedPin1, GPIO.OUT)
-	GPIO.setup(LedPin2, GPIO.OUT)
-	fps.setLED(True)
-	count = 0
-        p1 = GPIO.PWM(LedPin1, 1000)
-        p2 = GPIO.PWM(LedPin2, 1000)
-        p1.start(0)
-        p2.start(0)
-	while not fps.isPressFinger():
-	        while not fps.isPressFinger() and count<=3:
-	                GPIO.output(LedPin2,True)
-	                GPIO.output(LedPin1,False)
-	                time.sleep(0.2)
-	                GPIO.output(LedPin1,True)
-	                GPIO.output(LedPin2,False)
-	                time.sleep(0.2)
-	                count = count+1
-	        GPIO.output(LedPin1,False)
-	        GPIO.output(LedPin2,False)
-	        count = 0
-	        while not fps.isPressFinger() and count<=2:
-	                b0 = 0
-	                b1 = 100
-	                while b0 <=100 and b1 >= 0 and not fps.isPressFinger():
-	                        p1.ChangeDutyCycle(b0)
-	                        p2.ChangeDutyCycle(b1)
-	                        b1 -= fade
-	                        b0 += fade
-	                        time.sleep(0.1)
-	                b0=100
-	                b1=0
-	                while b0 >= 0 and b1 <=100 and not fps.isPressFinger():
-	                        p1.ChangeDutyCycle(b0)
-	                        p2.ChangeDutyCycle(b1)
-	                        b1 += fade;
-	                        b0 -= fade;
-	                        time.sleep(0.1)
-	                count = count+1
+	
