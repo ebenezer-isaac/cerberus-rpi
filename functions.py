@@ -211,7 +211,7 @@ def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datet
     return weekid
 
 def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
-    with open('./slots.txt', "r") as fp:
+    with open('./docs/slots.txt', "r") as fp:
         for x in fp.readlines():
             x = x.split(",")
             x[2] = x[2].replace("\n","")
@@ -251,7 +251,7 @@ def get_next_scheduleId():
         today.sort()
         time=datetime.datetime.now().strftime("%H:%M:%S")
         slots=[]
-        with open('./slots.txt', "r") as fp:
+        with open('./docs/slots.txt', "r") as fp:
             for x in fp.readlines():
                 x = x.split(",")
                 x[2] = x[2].replace("\n","")
@@ -264,7 +264,7 @@ def get_next_scheduleId():
         return 'All Labs Over'
 
 def sync_attendance():
-    with open('./attendance.txt', "r") as fp:
+    with open('./docs/attendance.txt', "r") as fp:
         for i in fp.readlines():
             attendance = i.strip()
             attendance = attendance.split(",")
@@ -347,10 +347,10 @@ def sync_slots():
         cur.execute(sql)
         result = cur.fetchall()
         if result:
-            file = open("./slots.txt","w")
+            file = open("./docs/slots.txt","w")
             file.write("")
             file.close()
-            file = open("./slots.txt","a")
+            file = open("./docs/slots.txt","a")
             for x in result:
                 file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
             file.close()
@@ -358,14 +358,14 @@ def sync_slots():
         print(format(err))
 
 def get_map_prn(id):
-        map = json.load(open("./map.json"))
+        map = json.load(open("./docs/map.json"))
         prn = map[str(id)]
         return prn
 
 def set_map_prn(id,prn):
-        map = json.load(open("./map.json"))
+        map = json.load(open("./docs/map.json"))
         map[str(id)]=prn
-        with open("./map.json", 'w') as file:
+        with open("./docs/map.json", 'w') as file:
             file.write(json.dumps(map, sort_keys=True))
 
 def sync_stud_sub():
@@ -374,10 +374,10 @@ def sync_stud_sub():
         cur.execute(sql)
         result = cur.fetchall()
         if result:
-            file = open("./stud-sub.txt","w")
+            file = open("./docs/stud-sub.txt","w")
             file.write("")
             file.close()
-            file = open("./stud-sub.txt","a")
+            file = open("./docs/stud-sub.txt","a")
             for x in result:
                 file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
             file.close()
@@ -385,7 +385,7 @@ def sync_stud_sub():
         print(format(err))
 
 def att_valid(prn,subjectid,batchid):
-    with open('./stud-sub.txt', "r") as fp:
+    with open('./docs/stud-sub.txt', "r") as fp:
         for x in fp.readlines():
             x = x.split(",")
             x[2] = x[2].replace("\n","")
@@ -400,10 +400,10 @@ def sync_stud_det():
         cur.execute(sql)
         result = cur.fetchall()
         if result:
-            file = open("./stud-det.txt","w")
+            file = open("./docs/stud-det.txt","w")
             file.write("")
             file.close()
-            file = open("./stud-det.txt","a")
+            file = open("./docs/stud-det.txt","a")
             for x in result:
                 file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
             file.close()
@@ -412,7 +412,7 @@ def sync_stud_det():
 
 def get_stud_sub_list(subjectid, batchid):
     studs=[]
-    with open('./stud-sub.txt', "r") as fp:
+    with open('./docs/stud-sub.txt', "r") as fp:
         for x in fp.readlines():
             x = x.split(",")
             x[2] = x[2].replace("\n","")
@@ -431,11 +431,11 @@ def set_templates(studs):
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
     cur = myconn.cursor()
-    text = open("./logid.txt","r")
+    text = open("./docs/logid.txt","r")
     logid =str(text.read()).strip()
     text.close()
     sync = []
-    with open('./sync.txt', "r") as fp:
+    with open('./docs/sync.txt', "r") as fp:
         for i in fp.readlines():
             tmp = i.strip()
             tmp = tmp.split(",")
@@ -490,7 +490,7 @@ def sync_templates ():
                    sql="insert into studentfingerprint values('"+str(user_id)+"', "+str(template_id)+", "+str(template)+")"
                 else:
                    sql="insert into facultyfingerprint values("+str(user_id)+", "+str(template_id)+", "+str(template)+")"
-                text = open('/templates/'+str(template_name)+'.txt','rb')
+                text = open('./templates/'+str(template_name)+'.txt','rb')
                 template = text.read()
                 text.close()
                 try:
@@ -501,8 +501,8 @@ def sync_templates ():
                     print(format(err))
         elif source=='db':
             if status=='delete':
-                os.remove('/templates/'+str(template_name)+'.txt')
-                map = json.load(open("./map.json"))
+                os.remove('./templates/'+str(template_name)+'.txt')
+                map = json.load(open("./docs/map.json"))
                 for fps_id in map:
                     if map[id]==str(template_name):
                         fps.DeleteId(id)
@@ -522,21 +522,21 @@ def sync_templates ():
                         text.close()
                 except:
                     myconn.rollback()
-    text = open("./logid.txt","w")
+    text = open("./docs/logid.txt","w")
     text.write(str(logid))
     text.close()
 
 #---------------Utilities---------------------------------------
 
 def get_map_prn(id):
-        map = json.load(open("./docs/map.json"))
+        map = json.load(open("./docs/docs/map.json"))
         prn = map[str(id)]
         return prn
 
 def set_map_prn(id,prn):
-        map = json.load(open("./docs/map.json"))
+        map = json.load(open("./docs/docs/map.json"))
         map[str(id)]=prn
-        with open("./docs/map.json", 'w') as file:
+        with open("./docs/docs/map.json", 'w') as file:
 	        file.write(json.dumps(map, sort_keys=True))
 
 def set_template(template_name,fps_id):
