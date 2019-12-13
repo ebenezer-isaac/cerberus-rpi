@@ -10,10 +10,6 @@ host = "192.168.0.7"
 user = "root"
 password = "cerberus"
 database = "cerberus"
-print("trying for connection")
-#myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
-#cur = myconn.cursor()
-print("got connection")
 labid = 1
 BuzzPin =36
 GreenPin = 26
@@ -41,6 +37,17 @@ def setup():
     for i in range(4):
         GPIO.setup(ROW[i],GPIO.IN, pull_up_down = GPIO.PUD_UP)
     beep(4);
+    fps.setLED(True)
+
+def delete_fingerprint(id):
+    fps.deleteId(id);
+def backup_templates():
+    i = 0
+    while (i<=199):
+    	if fps.checkEnrolled(i):
+ 		print 'Fingerprint found at ID '+str(i)
+		print(get_template("backup-id-"+str(i),i))
+	i=i+1
 
 def identify():
     fps.waitForFinger()
@@ -50,6 +57,7 @@ def identify():
         beep(2)
         return "Finger not found"
     else:
+	print(id)
         return "Name : "+get_map_prn(id)
 
 def enroll(id):
@@ -134,9 +142,6 @@ def enroll(id):
     return response
 
 def print_enrolled():
-    lcd.clrscr()
-    t = rtc.getTime()
-    lcd.println(t)
     count = fps.countEnrolled()
     i = 0
     print 'Total number of enrolled fingerprints = '+str(count)
@@ -148,6 +153,8 @@ def print_enrolled():
 	i=i+1
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
+    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
+    cur = myconn.cursor()
     timeid = 0
     try:
         sql="SELECT timeID from timedata where time = '"+str(time)+"'"
@@ -529,22 +536,31 @@ def sync_templates ():
 #---------------Utilities---------------------------------------
 
 def get_map_prn(id):
-        map = json.load(open("./docs/docs/map.json"))
+        map = json.load(open("./docs/map.json"))
         prn = map[str(id)]
         return prn
 
 def set_map_prn(id,prn):
-        map = json.load(open("./docs/docs/map.json"))
+        map = json.load(open("./docs/map.json"))
         map[str(id)]=prn
-        with open("./docs/docs/map.json", 'w') as file:
+        with open("./docs/map.json", 'w') as file:
 	        file.write(json.dumps(map, sort_keys=True))
+
+def get_template(template_name,fps_id):
+    response=fps.getTemplate(fps_id)
+    template=open("./templates/"+str(template_name)+".txt","wb")
+    template.write(str(response))
+    template.close()
+    print response
+    print "Template written to "+str(template_name)+".txt"
 
 def set_template(template_name,fps_id):
     text = open("./templates/"+str(template_name)+".txt","rb")
-    template_data = text.readlines()
+    template_data = text.read()
     text.close()
-    response = fps.setTemplate(id,str(template_data))
-    print response
+    print template_data
+    response = fps.setTemplate(fps_id,str(template_data))
+    print "response : "+str(response)
     print 'Templates written to fps successfully'
 
 def println(text):

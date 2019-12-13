@@ -149,6 +149,7 @@ class FingerPi():
         data = self.getData(498)
         self.serial.timeout = self.timeout
         response = [response, data]
+	print response
  	return response[1]['Data']
     def setTemplate(self, ID, template):
         if self.sendCommand('SetTemplate', ID):
@@ -160,7 +161,8 @@ class FingerPi():
         else:
             raise RuntimeError("Couldn't send packet (data)")
         response = [response, data]
-	return response[0]['ACK']
+	print response
+        return response[1]['ACK']
     def enroll(self, ID):
         self.save = ID == -1
         if self.sendCommand('EnrollStart', ID):

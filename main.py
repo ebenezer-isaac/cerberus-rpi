@@ -16,25 +16,21 @@ println('Project Cerberus')
 println('The')
 println('Attndance Initiative')
 setup()
-sleep(1)
-
-
-
-
-
-
-id = 23
-name = 'Meghna Maam 2'
-response = enroll(id)
-if response:
-    clrscr()
-    println("Enroll Successfull")
-    set_map_prn(id,name)
-    sleep(1000)
-else:
-    clrscr()
-    println("Enroll Unsuccessfull")
-    sleep(1000)
+#sleep(1)
+#println(get_next_scheduleId())
+#sleep(1000)
+#print('sleep finished')
+#id = 22
+#print_enrolled()
+#print('getting fingerprint')
+#print(get_template("backup-"+str(id),id))
+#print('deleting fingerprint')
+#print(delete_fingerprint(id))
+#print('setting fingerprint')
+#print(set_template("backup-"+str(id),181))
+#print_enrolled()
+#print('identify fingerprint')
+print(backup_templates())
 while True:
     clrscr()
     println('Identify Finger')
@@ -44,3 +40,4 @@ while True:
     println(response)
     println("Waiting 1 sec")
     sleep(1000)
+
