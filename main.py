@@ -20,7 +20,7 @@ setup()
 #println(get_next_scheduleId())
 #sleep(1000)
 #print('sleep finished')
-#id = 22
+#id = 0
 #print_enrolled()
 #print('getting fingerprint')
 #print(get_template("backup-"+str(id),id))
@@ -30,7 +30,24 @@ setup()
 #print(set_template("backup-"+str(id),181))
 #print_enrolled()
 #print('identify fingerprint')
-print(backup_templates())
+#print(backup_templates())
+#print(delete_all())
+#id = 2
+#name = 'Ebenezer Isaac'
+#response = enroll(id)
+#if response:
+#    clrscr()
+#    println("Enroll Successfull")
+#    set_map_prn(id,name)
+#    sleep(1000)
+#else:
+#    clrscr()
+#    println("Enroll Unsuccessfull")
+#    sleep(1000)
+getKey()
+sync_all()
+studs=get_stud_sub_list('BCA1538',2)
+set_templates(studs)
 while True:
     clrscr()
     println('Identify Finger')

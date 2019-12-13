@@ -110,12 +110,11 @@ class FingerPi():
     def waitForFinger(self):
 	self.setLED(True)
 	while self.isPressFinger()==False:
-	    time.sleep(0.2)
+	    time.sleep(0.13)
     def waitForRemove(self):
 	self.setLED(True)
 	while self.isPressFinger()==True:
-	    time.sleep(0.2)
-	self.setLED(False)
+	    time.sleep(0.13)
     def identify(self):
 	self.waitForFinger()
 	if self.captureFinger(False):
@@ -135,10 +134,8 @@ class FingerPi():
         if self.sendCommand('CaptureFinger', best_image):
             self.serial.timeout = self.timeout
             response = [self.getResponse(), None]
- 	    self.setLED(False)
 	    return response[0]['ACK']
         else:
-	    self.setLED(False)
             raise RuntimeError("Couldn't send packet")
     def getTemplate(self, ID):
         if self.sendCommand('GetTemplate', ID):

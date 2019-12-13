@@ -22,6 +22,9 @@ MATRIX = [
 ]
 COL = [32,37,33,31]
 ROW = [29,15,13,11]
+print('con')
+myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
+cur = myconn.cursor()
 
 def setup():
     GPIO.setmode(GPIO.BOARD)
@@ -45,8 +48,9 @@ def backup_templates():
     i = 0
     while (i<=199):
     	if fps.checkEnrolled(i):
- 		print 'Fingerprint found at ID '+str(i)
-		print(get_template("backup-id-"+str(i),i))
+ 	    print('Fingerprint found at ID '+str(i))
+
+	    print(get_template("backup-id-"+str(i),i))
 	i=i+1
 
 def identify():
@@ -148,13 +152,11 @@ def print_enrolled():
     found=0
     while (found<count):
     	if fps.checkEnrolled(i):
- 		print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
-		found = found+1
+ 	    print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
+	    found = found+1
 	i=i+1
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
-    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
-    cur = myconn.cursor()
     timeid = 0
     try:
         sql="SELECT timeID from timedata where time = '"+str(time)+"'"
@@ -270,6 +272,12 @@ def get_next_scheduleId():
                 return 'Next Lab at '+str(slots[slotid][1])  
         return 'All Labs Over'
 
+def sync_all():
+    sync_timetable(1,1)
+    sync_slots()
+    sync_stud_sub()
+    sync_stud_det()
+
 def sync_attendance():
     with open('./docs/attendance.txt', "r") as fp:
         for i in fp.readlines():
@@ -340,7 +348,7 @@ def sync_timetable(week=0,year=0):
             file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
             file.write("")
             file.close()
-            if result:    
+            if result:
                 file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
                 for y in result:
                     file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
@@ -365,15 +373,15 @@ def sync_slots():
         print(format(err))
 
 def get_map_prn(id):
-        map = json.load(open("./docs/map.json"))
-        prn = map[str(id)]
-        return prn
+    map = json.load(open("./docs/map.json"))
+    prn = map[str(id)]
+    return prn
 
 def set_map_prn(id,prn):
-        map = json.load(open("./docs/map.json"))
-        map[str(id)]=prn
-        with open("./docs/map.json", 'w') as file:
-            file.write(json.dumps(map, sort_keys=True))
+    map = json.load(open("./docs/map.json"))
+    map[str(id)]=prn
+    with open("./docs/map.json", 'w') as file:
+        file.write(json.dumps(map, sort_keys=True))
 
 def sync_stud_sub():
     try:
@@ -399,7 +407,6 @@ def att_valid(prn,subjectid,batchid):
             if x[0]==str(prn) and x[1]==str(subjectid) and x[2]==str(batchid):
                 return True
     return False
-att_valid(2017033800104112,'BCA1538',2)
 
 def sync_stud_det():
     try:
@@ -429,11 +436,28 @@ def get_stud_sub_list(subjectid, batchid):
 
 def set_templates(studs):
     id=0
-    #delete templates till 150
+    print('deleting templates')
+    while id<=149:
+	print(id)
+	fps.deleteId(id)
+	id = id+1
+    id=0
+    print('printing students')
+    print(studs)
     for x in studs:
-        #set_template(id,x)
-        #set_map_prn(id,x)
-        id=id+1
+	template_id=1
+	print(x)
+	while template_id<3:
+	    try:
+	        template = open(str(x)+"-"+str(template_id)+".txt")
+	        template.close()
+	        set_template(str(x)+"-"+str(template_id),id)
+                set_map_prn(id,x)
+	    except IOError:
+		print("file does not exist")
+		#pass
+            template_id=template_id+1
+	id=id+1
 
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
@@ -536,48 +560,48 @@ def sync_templates ():
 #---------------Utilities---------------------------------------
 
 def get_map_prn(id):
-        map = json.load(open("./docs/map.json"))
-        prn = map[str(id)]
-        return prn
+    map = json.load(open("./docs/map.json"))
+    prn = map[str(id)]
+    return prn
 
 def set_map_prn(id,prn):
-        map = json.load(open("./docs/map.json"))
-        map[str(id)]=prn
-        with open("./docs/map.json", 'w') as file:
-	        file.write(json.dumps(map, sort_keys=True))
+    map = json.load(open("./docs/map.json"))
+    map[str(id)]=prn
+    with open("./docs/map.json", 'w') as file:
+        file.write(json.dumps(map, sort_keys=True))
 
 def get_template(template_name,fps_id):
     response=fps.getTemplate(fps_id)
     template=open("./templates/"+str(template_name)+".txt","wb")
     template.write(str(response))
     template.close()
-    print response
-    print "Template written to "+str(template_name)+".txt"
+    print(response)
+    print("Template written to "+str(template_name)+".txt")
 
 def set_template(template_name,fps_id):
     text = open("./templates/"+str(template_name)+".txt","rb")
     template_data = text.read()
     text.close()
-    print template_data
+    print(template_data)
     response = fps.setTemplate(fps_id,str(template_data))
-    print "response : "+str(response)
-    print 'Templates written to fps successfully'
+    print("response : "+str(response))
+    print('Templates written to fps successfully')
 
 def println(text):
-	lcd.println(text)
+    lcd.println(text)
 
 def printline(text,line):
-	lcd.println(text,line)
+    lcd.println(text,line)
 
 def clrscr():
-	lcd.clrscr()
+    lcd.clrscr()
 
 def sleep(milsec):
     time.sleep(milsec/1000)
 
 def print_time(line):
-        t = time.time()
-        lcd.println(str(rtc.hour)+':'+str(rtc.min)+':'+str(rtc.sec)+' '+str(rtc.date)+'/'+str(rtc.month)+'/'+str(rtc.year),3)
+    t = time.time()
+    lcd.println(str(rtc.hour)+':'+str(rtc.min)+':'+str(rtc.sec)+' '+str(rtc.date)+'/'+str(rtc.month)+'/'+str(rtc.year),3)
 
 def getKeyPress():
     for  j in range(4):
@@ -605,30 +629,30 @@ def getKey():
 #-------------------------Lighting------------------------------------
 
 def beep(sec):
-        count = 1
-        while count<=sec:
-                GPIO.output(BuzzPin,True)
-		GPIO.output(GreenPin,True)
-		GPIO.output(RedPin,False)
-                time.sleep(0.1)
-                GPIO.output(BuzzPin,False)
-		GPIO.output(GreenPin,False)
-		GPIO.output(RedPin,True)
-                time.sleep(0.1)
-                count = count+1
+    count = 1
+    while count<=sec:
+	GPIO.output(BuzzPin,True)
+	GPIO.output(GreenPin,True)
+	GPIO.output(RedPin,False)
+        time.sleep(0.1)
         GPIO.output(BuzzPin,False)
 	GPIO.output(GreenPin,False)
-	GPIO.output(RedPin,False)
+	GPIO.output(RedPin,True)
+        time.sleep(0.1)
+        count = count+1
+    GPIO.output(BuzzPin,False)
+    GPIO.output(GreenPin,False)
+    GPIO.output(RedPin,False)
 
 def blinkg(sec):
-        count = 1
-        while count<=sec:
-                GPIO.output(GreenPin,True)
-                time.sleep(0.1)
-                GPIO.output(GreenPin,False)
-                time.sleep(0.1)
-                count = count+1
+    count = 1
+    while count<=sec:
+        GPIO.output(GreenPin,True)
+        time.sleep(0.1)
         GPIO.output(GreenPin,False)
+        time.sleep(0.1)
+        count = count+1
+    GPIO.output(GreenPin,False)
 
 def blinkr(sec):
     count = 1
@@ -643,38 +667,38 @@ def blinkr(sec):
 def blinkalt(sec):
     count = 1
     while count<=sec:
-		blinkg(1)
-		blinkr(1)
-		count = count+1
+	blinkg(1)
+	blinkr(1)
+	count = count+1
 
 def warning(sec):
-	count = 1
-        while count<=sec:
-            GPIO.output(RedPin,True)
-   	    GPIO.output(BuzzPin,True)
-            time.sleep(0.1)
-            GPIO.output(RedPin,False)
-	    GPIO.output(BuzzPin,False)
-            time.sleep(0.1)
-            count = count+1
+    count = 1
+    while count<=sec:
+        GPIO.output(RedPin,True)
+        GPIO.output(BuzzPin,True)
+        time.sleep(0.1)
         GPIO.output(RedPin,False)
-	GPIO.output(BuzzPin,False)
+        GPIO.output(BuzzPin,False)
+        time.sleep(0.1)
+        count = count+1
+    GPIO.output(RedPin,False)
+    GPIO.output(BuzzPin,False)
 
 def light_show():
-	LedPin1 = 11
-	LedPin2 = 12
-        fade = 20
-	GPIO.setmode(GPIO.BOARD)
-	GPIO.setwarnings(False)
-	GPIO.setup(LedPin1, GPIO.OUT)
-	GPIO.setup(LedPin2, GPIO.OUT)
-	fps.setLED(True)
-	while not fps.isPressFinger():
-                GPIO.output(LedPin2,True)
-                GPIO.output(LedPin1,False)
-                time.sleep(0.5)
-                GPIO.output(LedPin1,True)
-                GPIO.output(LedPin2,False)
-                time.sleep(0.5)
+    LedPin1 = 11
+    LedPin2 = 12
+    fade = 20
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setwarnings(False)
+    GPIO.setup(LedPin1, GPIO.OUT)
+    GPIO.setup(LedPin2, GPIO.OUT)
+    fps.setLED(True)
+    while not fps.isPressFinger():
+        GPIO.output(LedPin2,True)
+        GPIO.output(LedPin1,False)
+        time.sleep(0.5)
+        GPIO.output(LedPin1,True)
+        GPIO.output(LedPin2,False)
+        time.sleep(0.5)
         GPIO.output(LedPin1,False)
         GPIO.output(LedPin2,False)
