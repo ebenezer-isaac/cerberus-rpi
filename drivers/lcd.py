@@ -105,7 +105,7 @@ class LCD:
       if line is not None:
          self.line = line
       if self.line>4:
-	 self.line=self.line-4
+         self.line=self.line-4
       self.lcd_display_string("                    ",self.line)
       self.lcd_display_string(str(text),self.line)
       self.line = self.line + 1

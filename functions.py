@@ -87,60 +87,60 @@ def enroll(id):
                 lcd.println("Failed - 1st Image")
                 lcd.println("Dry/Wet/Dirty Finger")
                 lcd.println("Please Try Again")
-	 	lcd.println("Trial : "+str(errCount))
-	    	sleep(1000)
-	errCount=0
-	while errCount<=2:
-	    lcd.clrscr()
-	    lcd.println("Press Finger Again")
-	    fps.waitForFinger()
-	    if fps.captureFinger(True):
+                lcd.println("Trial : "+str(errCount))
+                sleep(1000)
+        errCount=0
+        while errCount<=2:
+            lcd.clrscr()
+            lcd.println("Press Finger Again")
+            fps.waitForFinger()
+            if fps.captureFinger(True):
                 fps.enroll2()
-	        lcd.clrscr()
-	        lcd.println("Image Captured 2/3")
+                lcd.clrscr()
+                lcd.println("Image Captured 2/3")
                 lcd.println("Remove finger")
-	        fps.waitForRemove()
-	        lcd.clrscr()
-	        break
-	    else:
-		errCount= errCount+1
-	        lcd.clrscr()
-		lcd.println("Failed - 2nd Image")
- 		lcd.println("Dry/Wet/Dirty Finger")
+                fps.waitForRemove()
+                lcd.clrscr()
+                break
+            else:
+                errCount= errCount+1
+                lcd.clrscr()
+                lcd.println("Failed - 2nd Image")
+                lcd.println("Dry/Wet/Dirty Finger")
                 lcd.println("Please Try Again")
-		lcd.println("Trial : "+str(errCount))
-		sleep(1000)
-	errCount=0
-	while errCount<=2:
-	    lcd.clrscr()
-	    lcd.println("Press Finger Again")
-	    fps.waitForFinger()
-	    if fps.captureFinger(True):
+                lcd.println("Trial : "+str(errCount))
+                sleep(1000)
+        errCount=0
+        while errCount<=2:
+            lcd.clrscr()
+            lcd.println("Press Finger Again")
+            fps.waitForFinger()
+            if fps.captureFinger(True):
                 response = fps.enroll3()
-		if response==0:
-		    response = True
-	        else:
-		    errFCount=errFCount+1
-		lcd.clrscr()
-	        lcd.println("Image Captured 3/3")
+                if response==0:
+                    response = True
+                else:
+                    errFCount=errFCount+1
+                lcd.clrscr()
+                lcd.println("Image Captured 3/3")
                 lcd.println("Remove finger")
-	        fps.waitForRemove()
-		errFCount=4
-		break
-	    else:
-		errCount= errCount+1
-	        lcd.clrscr()
-		lcd.println("Failed - 3rd Image")
- 		lcd.println("Dry/Wet/Dirty Finger")
+                fps.waitForRemove()
+                errFCount=4
+                break
+            else:
+                errCount= errCount+1
+                lcd.clrscr()
+                lcd.println("Failed - 3rd Image")
+                lcd.println("Dry/Wet/Dirty Finger")
                 lcd.println("Please Try Again")
-		lcd.println("Trial : "+str(errCount))
-		sleep(1000)
+                lcd.println("Trial : "+str(errCount))
+                sleep(1000)
         if response==False:
-	    lcd.clrscr()
-	    lcd.println("Enroll Failed")
- 	    lcd.println("Press Finger Proprly")
+            lcd.clrscr()
+            lcd.println("Enroll Failed")
+            lcd.println("Press Finger Proprly")
             lcd.println("Please Try Again")
-	    lcd.println("Trial : "+str(errFCount))
+            lcd.println("Trial : "+str(errFCount))
     fps.setLED(False)
     return response
 
@@ -150,10 +150,10 @@ def print_enrolled():
     print 'Total number of enrolled fingerprints = '+str(count)
     found=0
     while (found<count):
-    	if fps.checkEnrolled(i):
- 	    print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
-	    found = found+1
-	i=i+1
+        if fps.checkEnrolled(i):
+             print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
+            found = found+1
+        i=i+1
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
     timeid = 0
@@ -437,26 +437,26 @@ def set_templates(studs):
     id=0
     print('deleting templates')
     while id<=149:
-	print(id)
-	fps.deleteId(id)
-	id = id+1
+        print(id)
+        fps.deleteId(id)
+        id = id+1
     id=0
     print('printing students')
     print(studs)
     for x in studs:
-	template_id=1
-	print(x)
-	while template_id<3:
-	    try:
-	        template = open(str(x)+"-"+str(template_id)+".txt")
-	        template.close()
-	        set_template(str(x)+"-"+str(template_id),id)
+        template_id=1
+        print(x)
+        while template_id<3:
+            try:
+                template = open(str(x)+"-"+str(template_id)+".txt")
+                template.close()
+                set_template(str(x)+"-"+str(template_id),id)
                 set_map_prn(id,x)
-	    except IOError:
-		print("file does not exist")
-		#pass
+            except IOError:
+                print("file does not exist")
+                #pass
             template_id=template_id+1
-	id=id+1
+        id=id+1
 
 def sync_templates ():
     myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
@@ -630,13 +630,13 @@ def getKey():
 def beep(sec):
     count = 1
     while count<=sec:
-	GPIO.output(BuzzPin,True)
-	GPIO.output(GreenPin,True)
-	GPIO.output(RedPin,False)
+        GPIO.output(BuzzPin,True)
+        GPIO.output(GreenPin,True)
+        GPIO.output(RedPin,False)
         time.sleep(0.1)
         GPIO.output(BuzzPin,False)
-	GPIO.output(GreenPin,False)
-	GPIO.output(RedPin,True)
+        GPIO.output(GreenPin,False)
+        GPIO.output(RedPin,True)
         time.sleep(0.1)
         count = count+1
     GPIO.output(BuzzPin,False)
@@ -666,9 +666,9 @@ def blinkr(sec):
 def blinkalt(sec):
     count = 1
     while count<=sec:
-	blinkg(1)
-	blinkr(1)
-	count = count+1
+        blinkg(1)
+        blinkr(1)
+        count = count+1
 
 def warning(sec):
     count = 1
