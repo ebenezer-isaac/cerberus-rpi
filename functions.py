@@ -45,13 +45,12 @@ def setup():
 def delete_fingerprint(id):
     fps.deleteId(id);
 def backup_templates():
-    i = 0
+    i = -1
     while (i<=199):
-    	if fps.checkEnrolled(i):
- 	    print('Fingerprint found at ID '+str(i))
-
-	    print(get_template("backup-id-"+str(i),i))
-	i=i+1
+        i=i+1
+        if fps.checkEnrolled(i):
+            print('Fingerprint found at ID '+str(i))
+            print(get_template("backup-id-"+str(i),i))
 
 def identify():
     fps.waitForFinger()
@@ -61,32 +60,32 @@ def identify():
         beep(2)
         return "Finger not found"
     else:
-	print(id)
+        print(id)
         return "Name : "+get_map_prn(id)
 
 def enroll(id):
     response = False
     errFCount=0
     while errFCount<=2 and fps.enroll(id)[0]['Parameter']==0 and not fps.checkEnrolled(id):
-	errCount=0
+        errCount=0
         while errCount<=2:
-	    lcd.clrscr()
-	    lcd.println('Enroll Started')
-	    lcd.println("Press Finger")
-	    fps.waitForFinger()
-	    if fps.captureFinger(True):
+            lcd.clrscr()
+            lcd.println('Enroll Started')
+            lcd.println("Press Finger")
+            fps.waitForFinger()
+            if fps.captureFinger(True):
                 fps.enroll1()
-	        lcd.clrscr()
-	        lcd.println("Image Captured 1/3")
+                lcd.clrscr()
+                lcd.println("Image Captured 1/3")
                 lcd.println("Remove finger")
-	        fps.waitForRemove()
-	        lcd.clrscr()
-		break
-	    else:
-	 	errCount= errCount+1
-	        lcd.clrscr()
-	 	lcd.println("Failed - 1st Image")
- 	 	lcd.println("Dry/Wet/Dirty Finger")
+                fps.waitForRemove()
+                lcd.clrscr()
+                break
+            else:
+                errCount= errCount+1
+                lcd.clrscr()
+                lcd.println("Failed - 1st Image")
+                lcd.println("Dry/Wet/Dirty Finger")
                 lcd.println("Please Try Again")
 	 	lcd.println("Trial : "+str(errCount))
 	    	sleep(1000)
