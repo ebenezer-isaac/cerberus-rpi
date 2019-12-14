@@ -1,4 +1,4 @@
-import mysql.connector, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO, datetime
+import pymysql, subprocess, time, json, os, datetime, calendar, RPi.GPIO as GPIO, datetime
 from datetime import date
 from drivers.fingerpi import FingerPi
 from drivers.lcd import LCD
@@ -7,8 +7,8 @@ fps = FingerPi()
 lcd = LCD()
 rtc = RTC()
 host = "192.168.0.7"
-user = "root"
-password = "cerberus"
+user = "phpmyadmin"
+password = ""
 database = "cerberus"
 labid = 1
 BuzzPin =36
@@ -23,8 +23,10 @@ MATRIX = [
 COL = [32,37,33,31]
 ROW = [29,15,13,11]
 print('con')
-myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
+myconn = pymysql.connect(host,user,password,database)
+print('con')
 cur = myconn.cursor()
+print('con')
 
 def setup():
     GPIO.setmode(GPIO.BOARD)
@@ -44,6 +46,9 @@ def setup():
 
 def delete_fingerprint(id):
     fps.deleteId(id);
+
+def delete_all():
+    fps.deleteAll()
 def backup_templates():
     i = -1
     while (i<=199):
@@ -61,9 +66,63 @@ def identify():
         return "Finger not found"
     else:
         print(id)
-        return "Name : "+get_map_prn(id)
+        return "PRN:"+get_map_prn(id)
 
-def enroll(id):
+def enroll(user_id,template_id):
+    lcd.clrscr()
+    lcd.println("Enroll Start")
+    lcd.println(""+str(user_id))
+    lcd.println(""+str(template_id))
+    sleep(1000)
+    trialCount=0
+    id=0
+    flag=0
+    while id<=149:
+        if not fps.checkEnrolled(id):
+            break
+	else:
+	    id = id+1
+    while trialCount<=2:
+        enroll_main(id)
+        verifyCount=0
+        while verifyCount<=2:
+	    lcd.clrscr()
+            lcd.println("Press Finger")
+            lcd.println("to Verify")
+            if fps.identify()==id:
+                lcd.clrscr()
+		lcd.println("Verification")
+		lcd.println("Successfull")
+                verifyCount=3
+                flag=1
+		get_template(str(user_id)+"-"+str(template_id),id)
+                text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
+                template = text.read()
+                text.close()
+                sql=" "
+                val=0
+                if len(user_id)==16:
+		    sql="""update `studentfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
+                else:
+		    sql="""update `facultyfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
+                try:
+		    val = (template,user_id,template_id)
+		    cur.execute(sql,val)
+                    sql="insert into log values(null,1,"+str(get_dateId())+","+str(get_timeId())+",'"+str(user_id)+"-"+str(template_id)+" enroll')"
+		    cur.execute(sql)
+		    print "Uploaded Successfully"
+                except pymysql.Error as err:
+                    print(format(err))
+            else:
+                verifyCount=verifyCount+1
+        if verifyCount>2:
+            fps.deleteId(id)
+            trialCount=trialCount+1
+    if flag==0:
+        lcd.println("Enroll Failed")
+
+
+def enroll_main(id):
     response = False
     errFCount=0
     while errFCount<=2 and fps.enroll(id)[0]['Parameter']==0 and not fps.checkEnrolled(id):
@@ -147,12 +206,12 @@ def enroll(id):
 def print_enrolled():
     count = fps.countEnrolled()
     i = 0
-    print 'Total number of enrolled fingerprints = '+str(count)
+    print("Total number of enrolled fingerprints = "+str(count))
     found=0
     while (found<count):
         if fps.checkEnrolled(i):
-             print 'Fingerprint Count '+str(found)+' is at ID '+str(i)
-            found = found+1
+             print("Fingerprint Count "+str(found)+" is at ID "+str(i))
+             found = found+1
         i=i+1
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
