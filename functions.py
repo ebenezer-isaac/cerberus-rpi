@@ -228,10 +228,10 @@ def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
                 val = (time)
                 cur.execute(sql,val)
                 return get_timeId(time)
-            except mysql.connector.Error as err:
+            except pymysql.Error as err:
                 print(format(err))
                 return 0
-    except mysql.connector.Error as err:
+    except pymysql.Error as err:
         print(format(err))
         return 0
     return timeid
@@ -249,10 +249,10 @@ def get_dateId(date=date.today()):
                 sql="insert into datedata values(null,'"+str(date)+"')"
                 cur.execute(sql)
                 return get_dateId(date)
-            except mysql.connector.Error as err:
+            except pymysql.Error as err:
                 print(format(err))
                 return 0
-    except mysql.connector.Error as err:
+    except pymysql.Error as err:
         print(format(err))
     return dateid
 
@@ -269,10 +269,10 @@ def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datet
                 sql="insert into week values(null,"+str(week)+","+str(year)+")"
                 cur.execute(sql)
                 return get_weekId(week,year)
-            except mysql.connector.Error as err:
+            except pymysql.Error as err:
                 print(format(err))
                 return 0
-    except mysql.connector.Error as err:
+    except pymysql.Error as err:
         print(format(err))
         return 0
     return weekid
@@ -348,14 +348,14 @@ def sync_attendance():
                     sql="insert into `attendance` values(null,'"+str(attendance[2])+"',"+str(scheduleid)+","+str(timeid)+")"
                     print(sql)
                     cur.execute(sql)
-                except mysql.connector.Error as err:
+                except pymysql.Error as err:
                     print(format(err))
             else:
                 try:
                     sql="insert into `facultytimetable` values("+str(scheduleid)+","+str(attendance[2])+")"
                     print(sql)
                     cur.execute(sql)
-                except mysql.connector.Error as err:
+                except pymysql.Error as err:
                     print(format(err))
 
 def sync_timetable(week=0,year=0):
@@ -377,9 +377,9 @@ def sync_timetable(week=0,year=0):
                         for y in result:
                             file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
                         file.close()
-                except mysql.connector.Error as err:
+                except pymysql.Error as err:
                     print(format(err))
-        except mysql.connector.Error as err:
+        except pymysql.Error as err:
             print(format(err))
     elif week==1 and year==1:
         week= datetime.datetime.now().isocalendar()[1]
@@ -396,7 +396,7 @@ def sync_timetable(week=0,year=0):
                 for y in result:
                     file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
                 file.close()
-        except mysql.connector.Error as err:
+        except pymysql.Error as err:
             print(format(err))
     else:
         try:
@@ -411,7 +411,7 @@ def sync_timetable(week=0,year=0):
                 for y in result:
                     file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
                 file.close()
-        except mysql.connector.Error as err:
+        except pymysql.Error as err:
             print(format(err))
 
 def sync_slots():
@@ -427,7 +427,7 @@ def sync_slots():
             for x in result:
                 file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
             file.close()
-    except mysql.connector.Error as err:
+    except pymysql.Error as err:
         print(format(err))
 
 def get_map_prn(id):
@@ -454,7 +454,7 @@ def sync_stud_sub():
             for x in result:
                 file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
             file.close()
-    except mysql.connector.Error as err:
+    except pymysql.Error as err:
         print(format(err))
 
 def att_valid(prn,subjectid,batchid):
@@ -479,7 +479,7 @@ def sync_stud_det():
             for x in result:
                 file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
             file.close()
-    except mysql.connector.Error as err:
+    except pymysql.Error as err:
         print(format(err))
 
 def get_stud_sub_list(subjectid, batchid):
@@ -518,7 +518,7 @@ def set_templates(studs):
         id=id+1
 
 def sync_templates ():
-    myconn = mysql.connector.connect(host=host, user=user,passwd=password,database=database)
+    myconn = pymysql.connect(host=host, user=user,passwd=password,database=database)
     cur = myconn.cursor()
     text = open("./docs/logid.txt","r")
     logid =str(text.read()).strip()
@@ -546,7 +546,7 @@ def sync_templates ():
             log = str(date)+' '+str(time)+','+str(comments).replace(' ',',')+',db'
             log = log.split(',')
             sync.append((log[0],log[1],log[2],log[3]))
-    except mysql.connector.Error as err:
+    except pymysql.Error as err:
         print(format(err))
     sync.sort()
     print(sync)
@@ -572,7 +572,7 @@ def sync_templates ():
                     cur.execute(sql)
                     sql="insert into log values(null,1,"+str(dateid)+",'"+str(timeid)+","+str(template_name)+" delete')"
                     cur.execute(sql)
-                except mysql.connector.Error as err:
+                except pymysql.Error as err:
                     print(format(err))
             elif status=='enroll':
                 if len(user_id)==16:
@@ -586,7 +586,7 @@ def sync_templates ():
                     cur.execute(sql)
                     sql="insert into log values(null,1,"+str(dateid)+",'"+str(timeid)+","+str(template_name)+" enroll')"
                     cur.execute(sql)
-                except mysql.connector.Error as err:
+                except pymysql.Error as err:
                     print(format(err))
         elif source=='db':
             if status=='delete':
