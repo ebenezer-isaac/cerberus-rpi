@@ -22,9 +22,7 @@ MATRIX = [
 ]
 COL = [32,37,33,31]
 ROW = [29,15,13,11]
-myconn = pymysql.connect(host,user,password,database)
-cur = myconn.cursor()
-myconn.autocommit(True)
+
 def setup():
     GPIO.setmode(GPIO.BOARD)
     GPIO.setwarnings(False)
@@ -46,6 +44,7 @@ def delete_fingerprint(id):
 
 def delete_all():
     fps.deleteAll()
+    
 def backup_templates():
     i = -1
     while (i<=199):
@@ -61,10 +60,10 @@ def identify():
     if int(id)==200:
         clrscr()
         beep(2)
-        return "Finger not found"
+        return 0
     else:
         print(id)
-        return "PRN:"+get_map_prn(id)
+        return get_map_prn(id)
 
 def enroll(user_id,template_id):
     lcd.clrscr()
@@ -78,90 +77,39 @@ def enroll(user_id,template_id):
     while id<=149:
         if not fps.checkEnrolled(id):
             break
-	else:
-	    id = id+1
+        else:
+            id = id+1
     while trialCount<=2:
         print enroll_main(id)
         verifyCount=0
         while verifyCount<=2:
-	    lcd.clrscr()
+            lcd.clrscr()
             lcd.println("Press Finger")
             lcd.println("to Verify")
             if fps.identify()==id:
                 lcd.clrscr()
-		lcd.println("Verification")
-		lcd.println("Successfull")
+                lcd.println("Verification")
+                lcd.println("Successfull")
                 trialCount=3
                 verifyCount=4
                 flag=1
-		get_template(str(user_id)+"-"+str(template_id),id)
+                get_template(str(user_id)+"-"+str(template_id),id)
                 text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
                 template = text.read()
                 text.close()
-                sql=" "
-                val=0
-                if len(user_id)==16:
-		    sql="""update `studentfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
-                else:
-		    sql="""update `facultyfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
-                try:
-		    val = (template,user_id,template_id)
-		    cur.execute(sql,val)
-#                   sql="insert into log(`logTypeID`, `dateID`, `timeID`, `comments`) values(%s,%s,%s,%s)"
-#	            comment=str(user_id)+"_"+str(template_id)+" enroll"
-#		    print comment
-#		    val = (1,get_dateId(),get_timeId(),comment)
-#		    cur.execute(sql,val)
-		    print "Uploaded Successfully"
-                except pymysql.Error as err:
-                    print(format(err))
+                upload_template(user_id,template_id)
             else:
                 lcd.clrscr()
-		lcd.println("Verification")
-		lcd.println("UnSuccessfull")
-		lcd.println("Try Again")
+                lcd.println("Verification")
+                lcd.println("UnSuccessfull")
+                lcd.println("Try Again")
                 verifyCount=verifyCount+1
         if verifyCount==3:
             fps.deleteId(id)
             trialCount=trialCount+1
     if flag==0:
         lcd.println("Enroll Failed")
-
-def upload_template(user_id,template_id):
-    text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
-    template = text.read()
-    text.close()
-    sql=" "
-    val=0
-    if len(user_id)==16:
-   	sql="""update `studentfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
-    else:
-        sql="""update `facultyfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
-    try:
-        val = (template,user_id,template_id)
-        print cur.execute(sql,val)
-	print myconn.commit()
-	print "Uploaded Successfully"
-    except pymysql.Error as err:
-	print err
-
-def download_template(user_id, template_id):
-    if len(user_id)==16:
-        sql="select template from studentfingerprint where prn='"+str(user_id)+"' and templateID="+str(template_id)
-    else:
-        sql="select template from facultyfingerprint where facultyID="+str(user_id)+" and templateID="+str(template_id)
-    try:
-        print sql
-        cur.execute(sql)
-        result = cur.fetchall()
-        for y in result:
-            template=y[0]
-	    print template
-            text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','wb')
-            text.write(str(template))
-            text.close()
-    except pymysql.Error as err:
-	print err
+    fps.deleteId(id)
 
 def enroll_main(id):
     response = False
@@ -257,6 +205,8 @@ def print_enrolled():
         i=i+1
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
     timeid = 0
     try:
         sql="SELECT timeID from timedata where time = '"+str(time)+"'"
@@ -269,16 +219,20 @@ def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
                 sql="insert into timedata values(null,'"+str(time)+"')"
                 val = (time)
                 cur.execute(sql,val)
+                myconn.commit()
                 return get_timeId(time)
             except pymysql.Error as err:
                 print(format(err))
                 return 0
+        myconn.close()
     except pymysql.Error as err:
         print(format(err))
         return 0
     return timeid
 
-def get_dateId(date=date.today()):
+def get_dateId(date=date.today
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
     dateid = 0
     try:
         sql="SELECT dateID from datedata where date = '"+str(date)+"'"
@@ -290,15 +244,19 @@ def get_dateId(date=date.today()):
             try:
                 sql="insert into datedata values(null,'"+str(date)+"')"
                 cur.execute(sql)
+                myconn.commit()
                 return get_dateId(date)
             except pymysql.Error as err:
                 print(format(err))
                 return 0
+        myconn.close()
     except pymysql.Error as err:
         print(format(err))
     return dateid
 
 def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datetime.now().year):
+    myconn = pymysql.connect(host,user,password,database)
+	cur = myconn.cursor() 
     weekid = 0
     try:
         sql="SELECT weekID from week where week = "+str(week)+" and year = "+str(year)
@@ -310,10 +268,12 @@ def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datet
             try:
                 sql="insert into week values(null,"+str(week)+","+str(year)+")"
                 cur.execute(sql)
+                myconn.commit()
                 return get_weekId(week,year)
             except pymysql.Error as err:
                 print(format(err))
                 return 0
+        myconn.close()
     except pymysql.Error as err:
         print(format(err))
         return 0
@@ -355,7 +315,7 @@ def get_next_scheduleId():
                 temp.append(x[5])
                 today.append(temp)
     if len(today)==0:
-        return 'No Labs Today'
+        return 0
     else:
         today.sort()
         time=datetime.datetime.now().strftime("%H:%M:%S")
@@ -369,8 +329,8 @@ def get_next_scheduleId():
         for x in today:
             slotid=int(x[0])
             if slots[slotid][1]>time:
-                return 'Next Lab at '+str(slots[slotid][1])  
-        return 'All Labs Over'
+                return slots[slotid]
+        return 1
 
 def sync_all():
     sync_timetable(1,1)
@@ -379,6 +339,9 @@ def sync_all():
     sync_stud_det()
 
 def sync_attendance():
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
+    flag=0
     with open('./docs/attendance.txt', "r") as fp:
         for i in fp.readlines():
             attendance = i.strip()
@@ -386,21 +349,24 @@ def sync_attendance():
             timeid=get_timeId(attendance[1])
             scheduleid=attendance[0]
             if len(attendance[2])==16:
-                try:
-                    sql="insert into `attendance` values(null,'"+str(attendance[2])+"',"+str(scheduleid)+","+str(timeid)+")"
-                    print(sql)
-                    cur.execute(sql)
-                except pymysql.Error as err:
-                    print(format(err))
+                sql="insert into `attendance` values(null,'"+str(attendance[2])+"',"+str(scheduleid)+","+str(timeid)+")"    
             else:
-                try:
-                    sql="insert into `facultytimetable` values("+str(scheduleid)+","+str(attendance[2])+")"
-                    print(sql)
-                    cur.execute(sql)
-                except pymysql.Error as err:
-                    print(format(err))
+                sql="insert into `facultytimetable` values("+str(scheduleid)+","+str(attendance[2])+")"
+            try:
+                print(sql)
+                cur.execute(sql)
+                myconn.commit()
+                flag=1
+            except:
+                flag=0
+    if flag==1:
+        file = open('./docs/attendance.txt', "w")
+        file.write(" ")
+        file.close()
 
 def sync_timetable(week=0,year=0):
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
     if week==0 and year==0:
         try:
             sql = "select weekid,week,year from week order by weekid"
@@ -457,6 +423,8 @@ def sync_timetable(week=0,year=0):
             print(format(err))
 
 def sync_slots():
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
     try:
         sql = "select * from slot order by startTime"
         cur.execute(sql)
@@ -484,6 +452,8 @@ def set_map_prn(id,prn):
         file.write(json.dumps(map, sort_keys=True))
 
 def sync_stud_sub():
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
     try:
         sql = "select * from studentsubject order by prn"
         cur.execute(sql)
@@ -509,6 +479,8 @@ def att_valid(prn,subjectid,batchid):
     return False
 
 def sync_stud_det():
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
     try:
         sql = "select  rollcall.classID, rollcall.rollNo, student.prn from student inner join rollcall on student.PRN = rollcall.PRN"
         cur.execute(sql)
@@ -518,9 +490,18 @@ def sync_stud_det():
             file.write("")
             file.close()
             file = open("./docs/stud-det.txt","a")
-            for x in result:
+			meta_template = json.load(open("./docs/meta_template.json"))
+			for x in result:
                 file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
+				template_name=str(x[2])+"-1"
+				if template_name not in meta_template:
+					meta_template[str(template_name)]="1970-01-01,00:00:00,0"
+				template_name=str(x[2])+"-1"
+				if template_name not in meta_template:
+					meta_template[str(template_name)]="1970-01-01,00:00:00,0"
             file.close()
+			with open("./docs/meta_template.json", 'w') as file:
+				file.write(json.dumps(meta_template, sort_keys=True))
     except pymysql.Error as err:
         print(format(err))
 
@@ -558,104 +539,98 @@ def set_templates(studs):
                 #pass
             template_id=template_id+1
         id=id+1
-
-def sync_templates ():
-    myconn = pymysql.connect(host=host, user=user,passwd=password,database=database)
-    cur = myconn.cursor()
-    text = open("./docs/logid.txt","r")
-    logid =str(text.read()).strip()
+	
+def upload_template(user_id,template_id, dateid, timeid):
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
+    text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
+    template = text.read()
     text.close()
-    sync = []
-    with open('./docs/sync.txt', "r") as fp:
-        for i in fp.readlines():
-            tmp = i.strip()
-            tmp = tmp.split(",")
-            try:
-                sync.append((tmp[0], tmp[1], tmp[2], tmp[3]))
-            except:
-                pass
+    if len(user_id)==16:   
+        sql="""update `studentfingerprint` set `template`= %s, `dateID` = %s, `timeID`=%s where `prn`=%s and `templateID`=%s"""
+    else:
+        sql="""update `facultyfingerprint` set `template`= %s, `dateID` = %s, `timeID`=%s where `prn`=%s and `templateID`=%s"""
     try:
-        sql="SELECT logID, (select datedata.date from datedata,log where log.dateID=datedata.dateID) as date ,(select timedata.time from timedata,log where log.timeID=timedata.timeID)as time, comments FROM `log` where logTypeID=1 and logID>"+str(logid)
-        print(sql)
-        val = (logid)
+        val = (dateid,timeid,template,user_id,template_id)
         cur.execute(sql,val)
+        myconn.commit()
+		myconn.close()
+        print "Uploaded Successfully"
+    except pymysql.Error as err:
+        print err
+
+def download_template(user_id, template_id):
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
+    if len(user_id)==16:
+        sql="select template, dateID, timeID from studentfingerprint where prn='"+str(user_id)+"' and templateID="+str(template_id)
+    else:
+        sql="select template, dateID, timeID from facultyfingerprint where facultyID="+str(user_id)+" and templateID="+str(template_id)
+    try:
+        cur.execute(sql)
         result = cur.fetchall()
+        for y in result:
+            template=y[0]
+            print template
+            text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','wb')
+            text.write(str(template))
+            text.close()
+			set_meta_temp_dateTimeStatus(user_id,template_id,y[1],y[2],1)
+		myconn.close()
+    except pymysql.Error as err:
+        print err
+
+def delete_template(user_id, template_id):
+	os.remove('./templates/'+str(user_id)+"-"+str(template_id)+'.txt')
+	meta_template = json.load(open("./docs/meta_template.json"))
+    meta_template.pop(str(user_id)+"-"+str(template_id), None)
+    with open("./docs/meta_template.json", 'w') as file:
+        file.write(json.dumps(meta_template, sort_keys=True))
+		
+def sync_templates ():
+    myconn = pymysql.connect(host,user,password,database)
+    cur = myconn.cursor() 
+    try:
+        sql="select concat(studentfingerprint.PRN,'-',studentfingerprint.templateID) as template_name, (select datedata.date from datedata where studentfingerprint.dateID = datedata.dateID) as Date , (select timedata.time from timedata where studentfingerprint.timeID = timedata.timeID) as Time, case when studentfingerprint.template is null then '0' when studentfingerprint.template is not null then '1' end as status from studentfingerprint union all select concat(facultyfingerprint.facultyID,'-',facultyfingerprint.templateID) as template_name, (select datedata.date from datedata where facultyfingerprint.dateID = datedata.dateID) as Date , (select timedata.time from timedata where facultyfingerprint.timeID = timedata.timeID) as Time, case when facultyfingerprint.template is null then '0' when facultyfingerprint.template is not null then '1' end as status from facultyfingerprint ORDER BY template_name;"
+        cur.execute(sql)
+        result = cur.fetchall()
+		templates=[]
         for x in result:
-            logid=x[0]
-            date = str(x[1]).replace("-","/")
-            time = x[2]
-            comments = x[3]
-            log = str(date)+' '+str(time)+','+str(comments).replace(' ',',')+',db'
-            log = log.split(',')
-            sync.append((log[0],log[1],log[2],log[3]))
+			templates.append(x[0])
+            template_name=x[0]
+            db_date = x[1]
+            db_time = x[2]
+			db_status = x[3]
+			dateTimeStatus = get_meta_temp_dateTimeStatus(template_name)
+			dateTimeStatus = dateTimeStatus.split(",")
+			rpi_date = dateTimeStatus[0]
+			rpi_time = dateTimeStatus[1]
+			rpi_status = dateTimeStatus[2]
+			if db_date==rpi_date and db_time==rpi_time:
+				pass
+			else:
+				template_name = template_name.split("-")
+				user_id=template_name[0]
+				template_id=template_name[1]
+				time_sort=[rpi_date+" "+rpi_time,db_date+" "+db_time]
+				time_sort.sort()
+				if db_status==0 and rpi_status==0:
+					pass
+				elif db_status==0 and rpi_status==1:
+					if time_sort[0]==db_status:
+						delete_template(user_id,template_id,db_date,db_time)
+					else:
+						upload_template(user_id, template_id,rpi_date,rpi_time)
+				elif db_status==1 and rpi_status==0:
+						download_template(user_id,template_id)
+				elif db_status==1 and rpi_status==1:
+					if time_sort[0]==db_status:
+						download_template(user_id,template_id)
+					else:
+						upload_template(user_id, template_id,rpi_date,rpi_time)
+		#delete all templates except for templates in list				
     except pymysql.Error as err:
         print(format(err))
-    sync.sort()
-    print(sync)
-    for x in sync:
-        tmp = str(x[0]).split(" ")
-        date = tmp[0]
-        time = tmp[1]
-        dateid = get_dateId(date)
-        timeid = get_timeId(time)
-        template_name = x[1]
-        temp = str(template_name).split('-')
-        user_id = temp[0]
-        template_id = temp[1]
-        status = x[2]
-        source = x[3]
-        if source=='rpi':
-            if status=='delete':
-                if len(user_id)==16:
-                    sql="delete * from studentfingerprint where prn='"+str(user_id)+"' and templateID="+str(template_id)
-                else:
-                    sql="delete * from facultyfingerprint where facultyID="+str(user_id)+" and templateID="+str(template_id)
-                try:
-                    cur.execute(sql)
-                    sql="insert into log values(null,1,"+str(dateid)+",'"+str(timeid)+","+str(template_name)+" delete')"
-                    cur.execute(sql)
-                except pymysql.Error as err:
-                    print(format(err))
-            elif status=='enroll':
-                if len(user_id)==16:
-                   sql="insert into studentfingerprint values('"+str(user_id)+"', "+str(template_id)+", "+str(template)+")"
-                else:
-                   sql="insert into facultyfingerprint values("+str(user_id)+", "+str(template_id)+", "+str(template)+")"
-                text = open('./templates/'+str(template_name)+'.txt','rb')
-                template = text.read()
-                text.close()
-                try:
-                    cur.execute(sql)
-                    sql="insert into log values(null,1,"+str(dateid)+",'"+str(timeid)+","+str(template_name)+" enroll')"
-                    cur.execute(sql)
-                except pymysql.Error as err:
-                    print(format(err))
-        elif source=='db':
-            if status=='delete':
-                os.remove('./templates/'+str(template_name)+'.txt')
-                map = json.load(open("./docs/map.json"))
-                for fps_id in map:
-                    if map[id]==str(template_name):
-                        fps.DeleteId(id)
-                        mps[id]='0'
-            elif status=='enroll':
-                if len(user_id)==16:
-                    sql="select template from studentfingerprint values where prn='"+str(user_id)+"' and templateID="+str(template_id)
-                else:
-                    sql="select template from facultyfingerprint values where facultyID="+str(user_id)+" and templateID="+str(template_id)
-                try:
-                    cur.execute(sql)
-                    fingerprints = cur.fetchall()
-                    for y in result:
-                        template=y[0]
-                        text = open('/templates/'+str(template_name)+'.txt','wb')
-                        text.write(str(template))
-                        text.close()
-                except:
-                    myconn.rollback()
-    text = open("./docs/logid.txt","w")
-    text.write(str(logid))
-    text.close()
 
 #---------------Utilities---------------------------------------
 
@@ -669,6 +644,18 @@ def set_map_prn(id,prn):
     map[str(id)]=prn
     with open("./docs/map.json", 'w') as file:
         file.write(json.dumps(map, sort_keys=True))
+		
+def get_meta_temp_dateTimeStatus(template_name):
+    meta_template = json.load(open("./docs/meta_template.json"))
+    dateTimeStatus = meta_template[str(template_name)]
+    return dateTimeStatus
+
+def set_meta_temp_dateTimeStatus(user_id,template_id,date,time,status):
+	dateTimeStatus=str(date)+","+str(time)+","+str(status)
+    meta_template = json.load(open("./docs/meta_template.json"))
+    meta_template[str(template_name)]=dateTimeStatus
+    with open("./docs/meta_template.json", 'w') as file:
+        file.write(json.dumps(meta_template, sort_keys=True))
 
 def get_template(template_name,fps_id):
     response=fps.getTemplate(fps_id)
