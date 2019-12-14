@@ -22,12 +22,9 @@ MATRIX = [
 ]
 COL = [32,37,33,31]
 ROW = [29,15,13,11]
-print('con')
 myconn = pymysql.connect(host,user,password,database)
-print('con')
 cur = myconn.cursor()
-print('con')
-
+myconn.autocommit(True)
 def setup():
     GPIO.setmode(GPIO.BOARD)
     GPIO.setwarnings(False)
@@ -60,6 +57,7 @@ def backup_templates():
 def identify():
     fps.waitForFinger()
     id = fps.identify()
+    print(id)
     if int(id)==200:
         clrscr()
         beep(2)
@@ -83,7 +81,7 @@ def enroll(user_id,template_id):
 	else:
 	    id = id+1
     while trialCount<=2:
-        enroll_main(id)
+        print enroll_main(id)
         verifyCount=0
         while verifyCount<=2:
 	    lcd.clrscr()
@@ -93,7 +91,8 @@ def enroll(user_id,template_id):
                 lcd.clrscr()
 		lcd.println("Verification")
 		lcd.println("Successfull")
-                verifyCount=3
+                trialCount=3
+                verifyCount=4
                 flag=1
 		get_template(str(user_id)+"-"+str(template_id),id)
                 text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
@@ -108,19 +107,61 @@ def enroll(user_id,template_id):
                 try:
 		    val = (template,user_id,template_id)
 		    cur.execute(sql,val)
-                    sql="insert into log values(null,1,"+str(get_dateId())+","+str(get_timeId())+",'"+str(user_id)+"-"+str(template_id)+" enroll')"
-		    cur.execute(sql)
+#                   sql="insert into log(`logTypeID`, `dateID`, `timeID`, `comments`) values(%s,%s,%s,%s)"
+#	            comment=str(user_id)+"_"+str(template_id)+" enroll"
+#		    print comment
+#		    val = (1,get_dateId(),get_timeId(),comment)
+#		    cur.execute(sql,val)
 		    print "Uploaded Successfully"
                 except pymysql.Error as err:
                     print(format(err))
             else:
+                lcd.clrscr()
+		lcd.println("Verification")
+		lcd.println("UnSuccessfull")
+		lcd.println("Try Again")
                 verifyCount=verifyCount+1
-        if verifyCount>2:
+        if verifyCount==3:
             fps.deleteId(id)
             trialCount=trialCount+1
     if flag==0:
         lcd.println("Enroll Failed")
 
+def upload_template(user_id,template_id):
+    text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
+    template = text.read()
+    text.close()
+    sql=" "
+    val=0
+    if len(user_id)==16:
+   	sql="""update `studentfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
+    else:
+        sql="""update `facultyfingerprint` set `template`= %s where `prn`=%s and `templateID`=%s"""
+    try:
+        val = (template,user_id,template_id)
+        print cur.execute(sql,val)
+	print myconn.commit()
+	print "Uploaded Successfully"
+    except pymysql.Error as err:
+	print err
+
+def download_template(user_id, template_id):
+    if len(user_id)==16:
+        sql="select template from studentfingerprint where prn='"+str(user_id)+"' and templateID="+str(template_id)
+    else:
+        sql="select template from facultyfingerprint where facultyID="+str(user_id)+" and templateID="+str(template_id)
+    try:
+        print sql
+        cur.execute(sql)
+        result = cur.fetchall()
+        for y in result:
+            template=y[0]
+	    print template
+            text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','wb')
+            text.write(str(template))
+            text.close()
+    except pymysql.Error as err:
+	print err
 
 def enroll_main(id):
     response = False
@@ -200,6 +241,7 @@ def enroll_main(id):
             lcd.println("Press Finger Proprly")
             lcd.println("Please Try Again")
             lcd.println("Trial : "+str(errFCount))
+            sleep(1000)
     fps.setLED(False)
     return response
 
@@ -633,7 +675,6 @@ def get_template(template_name,fps_id):
     template=open("./templates/"+str(template_name)+".txt","wb")
     template.write(str(response))
     template.close()
-    print(response)
     print("Template written to "+str(template_name)+".txt")
 
 def set_template(template_name,fps_id):
@@ -642,7 +683,6 @@ def set_template(template_name,fps_id):
     text.close()
     print(template_data)
     response = fps.setTemplate(fps_id,str(template_data))
-    print("response : "+str(response))
     print('Templates written to fps successfully')
 
 def println(text):
