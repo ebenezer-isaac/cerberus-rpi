@@ -92,7 +92,7 @@ def get_next_schedule():
     dayid=datetime.datetime.now().weekday()+1
     dayid = 1
     today=[]
-    with open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
+    with open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
         for x in fp.readlines():
             x = x.split(",")
             x[6] = x[6].replace("\n","")
@@ -124,7 +124,7 @@ def att_valid(prn,subjectid,batchid):
 
 def get_stud_sub_list(subjectid, batchid):
     studs=[]
-    with open('D:/Projects/Project Cerberus/cerberus-rpi/docs/stud-sub.txt', "r") as fp:
+    with open('./docs/stud-sub.txt', "r") as fp:
         for x in fp.readlines():
             x = x.split(",")
             x[2] = x[2].replace("\n","")
@@ -182,11 +182,11 @@ def sync_timetable(week=0,year=0):
                     sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(x[0])+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
                     cur.execute(sql)
                     result = cur.fetchall()
-                    file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","w")
+                    file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","w")
                     file.write("")
                     file.close()
                     if result:
-                        file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","a")
+                        file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","a")
                         for y in result:
                             startTime=str(y[2])
                             if len(startTime)==7:
@@ -207,11 +207,11 @@ def sync_timetable(week=0,year=0):
             sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
             cur.execute(sql)
             result = cur.fetchall()
-            file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
+            file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
             file.write("")
             file.close()
             if result:
-                file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
+                file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
                 for y in result:
                     startTime=str(y[2])
                     if len(startTime)==7:
@@ -228,11 +228,11 @@ def sync_timetable(week=0,year=0):
             sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
             cur.execute(sql)
             result = cur.fetchall()
-            file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
+            file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
             file.write("")
             file.close()
             if result:
-                file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
+                file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
                 for y in result:
                     startTime=str(y[2])
                     if len(startTime)==7:
