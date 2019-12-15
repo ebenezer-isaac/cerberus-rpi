@@ -122,11 +122,12 @@ def get_next_schedule():
             with open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
                 for x in fp.readlines():
                     x = x.split(",")
-                    x[len(x)] = x[len(x)].replace("\n","")
+                    x[len(x)-1] = x[len(x)-1].replace("\n","")
                     if x[1]==str(dayid):
                         x.pop(1)
                         today.append(x)
-        except:
+        except Exception as e:
+            print e
             return -1
         if len(today)==0:
             return 3
@@ -615,7 +616,7 @@ def enroll(user_id,template_id):
                         text.close()
                         dateid = get_dateId(today)
                         timeid = get_timeId(time)
-                        if not dateid==0 and timeid ==0
+                        if not dateid==0 and timeid ==0:
                             upload_template(user_id,template_id,dateid,timeid)
                         return True
                     else:
@@ -880,8 +881,8 @@ def get_template(template_name,fps_id):
             return True
         else:
             return False
-        except:
-            return False
+    except:
+        return False
 
 def set_template(template_name,fps_id):
     try:
