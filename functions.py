@@ -156,11 +156,11 @@ def get_stud_sub_list(subjectid, batchid):
 def sync_all():
     sync_timetable(1,1)
     sync_slots()
-    sync_stud_sub()
+    sync_fac_det()
     sync_stud_det()
-    sync_templates()
+    sync_stud_sub()
     sync_attendance()
-    sync_
+    sync_templates()
 
 def sync_attendance():
     myconn = pymysql.connect(host,user,password,database)
@@ -369,8 +369,6 @@ def sync_templates ():
         cur.execute(sql)
         result = cur.fetchall()
         for x in result:
-            print(" ")
-            print(" ")
             template_name=x[0]
             db_date = x[1]
             db_time = x[2]
@@ -380,12 +378,9 @@ def sync_templates ():
             rpi_date = dateTimeStatus[0]
             rpi_time = dateTimeStatus[1]
             rpi_status = dateTimeStatus[2]
-            print(str(db_date)+" "+str(db_time)+" "+str(db_status))
-            print(str(rpi_date)+" "+str(rpi_time)+" "+str(rpi_status))
             if db_date==rpi_date and db_time==rpi_time:
-                print("both are equal")
+                pass
             else:
-                print("both are not equal")
                 template_name = template_name.split("-")
                 user_id=template_name[0]
                 template_id=template_name[1]
@@ -393,29 +388,21 @@ def sync_templates ():
                 db_dateTime = str(db_date)+" "+str(db_time)
                 time_sort=[rpi_dateTime,db_dateTime]
                 time_sort.sort()
-                print(time_sort)
-                print(" db_status="+str(db_status))
-                print("rpi_status="+str(rpi_status))
                 if db_status=='0' and rpi_status=='0':
-                    print("1both are null")
+                    pass
                 elif db_status=='1' and rpi_status=='0':
-                    print("3download template")
                     download_template(user_id,template_id)
                 elif db_status=='0' and rpi_status=='1':
                     if time_sort[0]==db_dateTime:
-                        print("2upload template")
                         upload_template(user_id, template_id,get_dateId(rpi_date),get_timeId(rpi_time))
                     else:
-                        print("2delete template")
                         delete_template(user_id,template_id)
                 elif db_status=='1' and rpi_status=='1':
                     if db_dateTime==rpi_dateTime:
-                        print("both are in sync")
+                        pass
                     elif time_sort[0]==db_dateTime:
-                        print("4upload template")
                         upload_template(user_id, template_id,get_dateId(rpi_date),get_timeId(rpi_time))
                     else:
-                        print("4download template")
                         download_template(user_id,template_id)
     except pymysql.Error as err:
         print(err)
@@ -522,11 +509,13 @@ def enroll(user_id,template_id):
                 verifyCount=4
                 flag=1
                 get_template(str(user_id)+"-"+str(template_id),id)
-                set_meta_temp_dateTimeStatus(user_id,template_id,date.today(),datetime.datetime.now().strftime("%H:%M:%S"),status)
+                today = date.today()
+                time = datetime.datetime.now().strftime("%H:%M:%S"),1
+                set_meta_temp_dateTimeStatus(user_id,template_id,today,time,1)
                 text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
                 template = text.read()
                 text.close()
-                upload_template(user_id,template_id)
+                upload_template(user_id,template_id,get_dateId(today),get_timeId(time))
             else:
                 lcd.clrscr()
                 lcd.println("Verification")
