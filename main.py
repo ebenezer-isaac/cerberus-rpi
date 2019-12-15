@@ -53,21 +53,11 @@ sleep(1000)
 #print(getKey())
 #studs=get_stud_sub_list('BCA1538',2)
 #set_templates(studs)
-delete_all()
-enroll('2017033800104472','1')
+#delete_all()
+#enroll('2017033800104472','1')
 #get_template('2017033800104472-1',0)
 #upload_template('2017033800104472','1')
 #download_template('2017033800104472','1')
-print 'show has ended'
-while True:
-    clrscr()
-    println('Identify Finger')
-    println("Press Finger")
-    response = identify()
-    clrscr()
-    println(response)
-    println("Waiting 1 sec")
-    sleep(1000)
 next_schedule=get_next_schedule()
 print(next_schedule)
 if next_schedule==2:
@@ -80,4 +70,14 @@ elif next_schedule[0]==0:
 elif next_schedule[0]==1:
     print('Lab is going to start')
     print(get_stud_sub_list(next_schedule[1][3],next_schedule[1][4]))
+print 'show has ended'
+while True:
+    clrscr()
+    println('Identify Finger')
+    println("Press Finger")
+    response = identify()
+    clrscr()
+    println(response)
+    println("Waiting 1 sec")
+    sleep(1000)
 

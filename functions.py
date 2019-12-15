@@ -687,8 +687,14 @@ def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datet
     return weekid
 
 def delete_user(user_id):
-    os.remove('./templates/'+str(user_id)+'-1.txt')
-    os.remove('./templates/'+str(user_id)+'-2.txt')
+    try:
+        os.remove('./templates/'+str(user_id)+'-1.txt')
+    except:
+        pass
+    try:
+        os.remove('./templates/'+str(user_id)+'-2.txt')
+    except:
+        pass
     meta_template = json.load(open("./docs/meta_template.json"))
     meta_template.pop(str(user_id)+"-1", None)
     meta_template.pop(str(user_id)+"-2", None)
