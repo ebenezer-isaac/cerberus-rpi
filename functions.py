@@ -150,17 +150,17 @@ def get_stud_sub_list(subjectid, batchid):
             if x[1]==str(subjectid) and x[2]==str(batchid):
                 studs.append(x[0])
     return studs
-	
+
 #---------------Sync---------------------------------------	
-	
+
 def sync_all():
     sync_timetable(1,1)
     sync_slots()
     sync_stud_sub()
     sync_stud_det()
-	sync_templates()
-	sync_attendance()
-	sync_
+    sync_templates()
+    sync_attendance()
+    sync_
 
 def sync_attendance():
     myconn = pymysql.connect(host,user,password,database)
@@ -322,7 +322,7 @@ def sync_stud_det():
         print(format(err))
     for x in list(set(rpi_studs) - set(db_studs)):
         delete_user(x)
-			
+
 def sync_slots():
     myconn = pymysql.connect(host,user,password,database)
     cur = myconn.cursor() 
@@ -358,7 +358,7 @@ def sync_stud_sub():
             file.close()
     except pymysql.Error as err:
         print(format(err))
-	
+
 #---------------Templates---------------------------------------
 
 def sync_templates ():
@@ -419,7 +419,7 @@ def sync_templates ():
                         download_template(user_id,template_id)
     except pymysql.Error as err:
         print(err)
-		
+
 def upload_template(user_id,template_id, dateid, timeid):
     myconn = pymysql.connect(host,user,password,database)
     cur = myconn.cursor() 
@@ -458,7 +458,7 @@ def download_template(user_id, template_id):
         myconn.close()
     except pymysql.Error as err:
          print(err)
-		 
+            
 def delete_template(user_id, template_id):
     os.remove('./templates/'+str(user_id)+'-'+str(template_id)+'.txt')
     meta_template = json.load(open("./docs/meta_template.json"))
@@ -490,7 +490,7 @@ def set_templates(studs):
                 #pass
             template_id=template_id+1
         id=id+1
-		
+
 #---------------Enroll---------------------------------------	
 
 def enroll(user_id,template_id):
@@ -522,7 +522,7 @@ def enroll(user_id,template_id):
                 verifyCount=4
                 flag=1
                 get_template(str(user_id)+"-"+str(template_id),id)
-				set_meta_temp_dateTimeStatus(user_id,template_id,date.today(),datetime.datetime.now().strftime("%H:%M:%S"),status)
+                set_meta_temp_dateTimeStatus(user_id,template_id,date.today(),datetime.datetime.now().strftime("%H:%M:%S"),status)
                 text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
                 template = text.read()
                 text.close()
@@ -621,7 +621,7 @@ def enroll_main(id):
             sleep(1000)
     fps.setLED(False)
     return response
-	
+
 #---------------Utilities---------------------------------------
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
@@ -675,7 +675,7 @@ def get_dateId(date=date.today):
 
 def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datetime.now().year):
     myconn = pymysql.connect(host,user,password,database)
-	cur = myconn.cursor() 
+    cur = myconn.cursor() 
     weekid = 0
     try:
         sql="SELECT weekID from week where week = "+str(week)+" and year = "+str(year)
@@ -706,7 +706,7 @@ def delete_user(user_id):
     meta_template.pop(str(user_id)+"-2", None)
     with open("./docs/meta_template.json", 'w') as file:
         file.write(json.dumps(meta_template, sort_keys=True)) 
-	
+
 def get_map_prn(id):
     map = json.load(open("./docs/map.json"))
     prn = map[str(id)]
@@ -717,7 +717,7 @@ def set_map_prn(id,prn):
     map[str(id)]=prn
     with open("./docs/map.json", 'w') as file:
         file.write(json.dumps(map, sort_keys=True))
-		
+
 def get_meta_temp_dateTimeStatus(template_name):
     meta_template = json.load(open("./docs/meta_template.json"))
     dateTimeStatus = meta_template[str(template_name)]
