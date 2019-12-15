@@ -68,4 +68,16 @@ while True:
     println(response)
     println("Waiting 1 sec")
     sleep(1000)
+next_schedule=get_next_schedule()
+print(next_schedule)
+if next_schedule==2:
+    print('All Labs for Today are over')
+elif next_schedule==3:
+    print('No Labs for today')
+elif next_schedule[0]==0:
+    print('Lab has started')
+    print(get_stud_sub_list(next_schedule[1][3],next_schedule[1][4]))
+elif next_schedule[0]==1:
+    print('Lab is going to start')
+    print(get_stud_sub_list(next_schedule[1][3],next_schedule[1][4]))
 

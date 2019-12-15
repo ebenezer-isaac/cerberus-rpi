@@ -76,8 +76,6 @@ def print_enrolled():
              found = found+1
         i=i+1
 
-
-
 def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
     with open('./docs/slots.txt', "r") as fp:
         for x in fp.readlines():
@@ -87,50 +85,33 @@ def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
                 return x[0]
     return 0
 
-def get_scheduleId(slotid=get_slotId(),week=datetime.datetime.now().isocalendar()[1],year=datetime.datetime.now().year,dayid=datetime.datetime.now().weekday()+1):
-    with open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
-        for x in fp.readlines():
-            x = x.split(",")
-            x[5] = x[5].replace("\n","")
-            if x[1]==str(slotid) and x[2]==str(dayid):
-                return x[0]
-    return 0
-
-def get_next_scheduleId():
+def get_next_schedule():
     week=datetime.datetime.now().isocalendar()[1]
+    week=50
     year=datetime.datetime.now().year
     dayid=datetime.datetime.now().weekday()+1
+    dayid = 1
     today=[]
-    with open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
+    with open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
         for x in fp.readlines():
             x = x.split(",")
-            x[5] = x[5].replace("\n","")
-            print(x)
-            if x[2]==str(dayid):
-                temp = []
-                temp.append(x[1])
-                temp.append(x[3])
-                temp.append(x[4])
-                temp.append(x[5])
-                today.append(temp)
+            x[6] = x[6].replace("\n","")
+            if x[1]==str(dayid):
+                x.pop(1)
+                today.append(x)
     if len(today)==0:
-        return 0
+        return 3
     else:
         today.sort()
         time=datetime.datetime.now().strftime("%H:%M:%S")
-        slots=[]
-        with open('./docs/slots.txt', "r") as fp:
-            for x in fp.readlines():
-                x = x.split(",")
-                x[2] = x[2].replace("\n","")
-                slots.append(x)
-        slots.sort()
+        time='08:00:00'
         for x in today:
-            slotid=int(x[0])
-            if slots[slotid][1]>time:
-                return slots[slotid]
-        return 1
-
+            if x[1]<=time<=x[2]:
+                return [0,x]
+        for x in today:
+            if x[2]>time:
+                return [1,x]
+        return 2
 
 def att_valid(prn,subjectid,batchid):
     with open('./docs/stud-sub.txt', "r") as fp:
@@ -143,7 +124,7 @@ def att_valid(prn,subjectid,batchid):
 
 def get_stud_sub_list(subjectid, batchid):
     studs=[]
-    with open('./docs/stud-sub.txt', "r") as fp:
+    with open('D:/Projects/Project Cerberus/cerberus-rpi/docs/stud-sub.txt', "r") as fp:
         for x in fp.readlines():
             x = x.split(",")
             x[2] = x[2].replace("\n","")
@@ -198,16 +179,22 @@ def sync_timetable(week=0,year=0):
             result = cur.fetchall()
             for x in result:
                 try:
-                    sql = "select timetable.scheduleID, slot.slotId, timetable.dayID, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(x[0])+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
+                    sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(x[0])+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
                     cur.execute(sql)
                     result = cur.fetchall()
-                    file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","w")
+                    file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","w")
                     file.write("")
                     file.close()
                     if result:
-                        file = open("./timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","a")
+                        file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(x[1])+"-"+str(x[2])+".txt","a")
                         for y in result:
-                            file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
+                            startTime=str(y[2])
+                            if len(startTime)==7:
+                                startTime = '0'+startTime
+                            endTime=str(y[3])
+                            if len(endTime)==7:
+                                endTime = '0'+endTime
+                            file.write(str(y[0])+","+str(y[1])+","+startTime+","+endTime+","+str(y[4])+","+str(y[5])+","+str(y[6])+"\n")
                         file.close()
                 except pymysql.Error as err:
                     print(format(err))
@@ -217,31 +204,43 @@ def sync_timetable(week=0,year=0):
         week= datetime.datetime.now().isocalendar()[1]
         year = datetime.datetime.now().year
         try:
-            sql = "select timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
+            sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
             cur.execute(sql)
             result = cur.fetchall()
-            file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
+            file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
             file.write("")
             file.close()
             if result:
-                file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
+                file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
                 for y in result:
-                    file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
+                    startTime=str(y[2])
+                    if len(startTime)==7:
+                        startTime = '0'+startTime
+                    endTime=str(y[3])
+                    if len(endTime)==7:
+                        endTime = '0'+endTime
+                    file.write(str(y[0])+","+str(y[1])+","+startTime+","+endTime+","+str(y[4])+","+str(y[5])+","+str(y[6])+"\n")
                 file.close()
         except pymysql.Error as err:
             print(format(err))
     else:
         try:
-            sql = "select timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
+            sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
             cur.execute(sql)
             result = cur.fetchall()
-            file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
+            file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","w")
             file.write("")
             file.close()
             if result:
-                file = open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
+                file = open("D:/Projects/Project Cerberus/cerberus-rpi/timetables/timetable-"+str(week)+"-"+str(year)+".txt","a")
                 for y in result:
-                    file.write(str(y[0])+","+str(y[1])+","+str(y[2])+","+str(y[3])+","+str(y[4])+","+str(y[5])+"\n")
+                    startTime=str(y[2])
+                    if len(startTime)==7:
+                        startTime = '0'+startTime
+                    endTime=str(y[3])
+                    if len(endTime)==7:
+                        endTime = '0'+endTime
+                    file.write(str(y[0])+","+str(y[1])+","+startTime+","+endTime+","+str(y[4])+","+str(y[5])+","+str(y[6])+"\n")
                 file.close()
         except pymysql.Error as err:
             print(format(err))
