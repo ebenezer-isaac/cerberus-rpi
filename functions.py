@@ -41,7 +41,7 @@ def setup():
         fps.setLED(True)
         return True
     except Exception as e:
-	    print(e)
+        print(e)
         return False
 
 def delete_fingerprint(id):
@@ -50,7 +50,7 @@ def delete_fingerprint(id):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def delete_all():
     try:
@@ -58,7 +58,7 @@ def delete_all():
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
     
 def backup_templates():
     try:
@@ -71,7 +71,8 @@ def backup_templates():
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
+    
 def identify():
     try:
         fps.waitForFinger()
@@ -86,7 +87,7 @@ def identify():
             return get_map_prn(id)
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def print_enrolled():
     try:
@@ -102,7 +103,7 @@ def print_enrolled():
         return True
     except Exception as e:
         print(e)
-		return Flase
+        return Flase
 
 def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
     try:
@@ -115,7 +116,7 @@ def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
         return 0
     except Exception as e:
         print(e)
-		return 0
+        return 0
 
 def get_next_schedule():
     try:
@@ -150,7 +151,7 @@ def get_next_schedule():
                     return [1,x]
             return 2
     except Exception as e:
-	    print(e)
+        print(e)
         return False
 
 def att_valid(prn,subjectid,batchid):
@@ -164,7 +165,7 @@ def att_valid(prn,subjectid,batchid):
         return False
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def get_stud_sub_list(subjectid, batchid):
     studs=[]
@@ -178,7 +179,7 @@ def get_stud_sub_list(subjectid, batchid):
         return studs
     except Exception as e:
         print(e)
-		return False
+        return False
 
 #---------------Sync---------------------------------------	
 
@@ -220,7 +221,7 @@ def sync_attendance():
                     flag=1
                 except Exception as e:
                     print(e)
-					pass
+                    pass
         if flag==1:
             file = open('./docs/attendance.txt', "w")
             file.write("")
@@ -228,7 +229,8 @@ def sync_attendance():
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
+    
 def sync_timetable(week=0,year=0):
     try:
         myconn = pymysql.connect(host,user,password,database)
@@ -260,10 +262,10 @@ def sync_timetable(week=0,year=0):
                             file.close()
                     except Exception as e:
                         print(e)
-						return False
+                        return False
             except Exception as e:
                 print(e)
-				return False
+                return False
         elif week==1 and year==1:
             week= datetime.datetime.now().isocalendar()[1]
             year = datetime.datetime.now().year
@@ -287,7 +289,7 @@ def sync_timetable(week=0,year=0):
                     file.close()
             except Exception as e:
                 print(e)
-				return False
+                return False
         else:
             try:
                 sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
@@ -308,8 +310,8 @@ def sync_timetable(week=0,year=0):
                         file.write(str(y[0])+","+str(y[1])+","+startTime+","+endTime+","+str(y[4])+","+str(y[5])+","+str(y[6])+"\n")
                     file.close()
             except Exception as e:
-				print(e)
-				return False
+                print(e)
+                return False
         return True
     except Exception as e:
         print(e)
@@ -350,13 +352,13 @@ def sync_fac_det():
                 with open("./docs/meta_template.json", 'w') as file:
                     file.write(json.dumps(meta_template, sort_keys=True))
         except Exception as e:
-		    print(e)
+            print(e)
             return False
         for x in list(set(rpi_facs) - set(db_facs)):
             delete_user(x)
         return True
     except Exception as e:
-	    print(e)
+        print(e)
         return False
     
 def sync_stud_det():
@@ -395,13 +397,13 @@ def sync_stud_det():
                     file.write(json.dumps(meta_template, sort_keys=True))
         except Exception as e:
             print(e)
-			return False
+            return False
         for x in list(set(rpi_studs) - set(db_studs)):
             delete_user(x)
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def sync_slots():
     try:
@@ -421,11 +423,11 @@ def sync_slots():
                 file.close()
         except Exception as e:
             print(e)
-			return False
+            return False
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def sync_stud_sub():
     try:
@@ -445,11 +447,11 @@ def sync_stud_sub():
                 file.close()
         except Exception as e:
             print(e)
-			return False
+            return False
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 #---------------Templates---------------------------------------
 
@@ -556,8 +558,8 @@ def download_template(user_id, template_id):
             myconn.close()
             return True
         except Exception as e:
-             print e
-             return False
+            print e
+            return False
     except Exception as e:
         print e
         return False
@@ -575,7 +577,7 @@ def delete_template(user_id, template_id):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def set_stud_templates(studs):
     id=0
@@ -597,7 +599,8 @@ def set_stud_templates(studs):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
+    
 def set_fac_templates():
     id=199
     try:
@@ -617,7 +620,8 @@ def set_fac_templates():
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
+
 #---------------Enroll---------------------------------------	
 
 def enroll(user_id,template_id):
@@ -682,7 +686,7 @@ def enroll(user_id,template_id):
         fps.deleteId(id)
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def enroll_main(id):
     try:
@@ -768,7 +772,7 @@ def enroll_main(id):
         return response
     except Exception as e:
         print(e)
-		return False
+        return False
 
 #---------------Utilities---------------------------------------
 
@@ -794,7 +798,7 @@ def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
         return timeid
     except Exception as e:
         myconn.close()
-		print(e)
+        print(e)
         return 0
 
 def get_dateId(date=date.today):
@@ -819,7 +823,7 @@ def get_dateId(date=date.today):
         return dateid
     except Exception as e:
         myconn.close()
-		print(e)
+        print(e)
         return 0
     
 
@@ -846,7 +850,7 @@ def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datet
         return weekid
     except Exception as e:
         myconn.close()
-		print(e)
+        print(e)
         return 0
     
 def delete_user(user_id):
@@ -867,7 +871,7 @@ def delete_user(user_id):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def get_map_prn(id):
     try:
@@ -876,7 +880,7 @@ def get_map_prn(id):
         return user_id
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def set_map_prn(id,user_id):
     try:
@@ -887,7 +891,8 @@ def set_map_prn(id,user_id):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
+
 def clear_map():
     try:
         map = json.load(open("./docs/map.json"))
@@ -900,7 +905,7 @@ def clear_map():
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def get_meta_temp_dateTimeStatus(template_name):
     try:
@@ -909,7 +914,7 @@ def get_meta_temp_dateTimeStatus(template_name):
         return dateTimeStatus
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def set_meta_temp_dateTimeStatus(user_id,template_id,date,time,status):
     try:
@@ -922,7 +927,7 @@ def set_meta_temp_dateTimeStatus(user_id,template_id,date,time,status):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
         
 def get_template(template_name,fps_id):
@@ -937,7 +942,7 @@ def get_template(template_name,fps_id):
             return False
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def set_template(template_name,fps_id):
     try:
@@ -948,7 +953,7 @@ def set_template(template_name,fps_id):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def println(text):
     lcd.println(text)
@@ -993,8 +998,9 @@ def getKey():
                         return MATRIX[i][j]
                 GPIO.output(COL[j],1)
     except Exception as e:
-		print(e)
-		return False
+        print(e)
+        return False
+    
 #-------------------------Lighting------------------------------------
 
 def beep(sec):
@@ -1016,7 +1022,7 @@ def beep(sec):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def blinkg(sec):
     count = 1
@@ -1031,7 +1037,7 @@ def blinkg(sec):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def blinkr(sec):
     count = 1
@@ -1046,7 +1052,7 @@ def blinkr(sec):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def blinkalt(sec):
     count = 1
@@ -1058,7 +1064,7 @@ def blinkalt(sec):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
     
 def warning(sec):
     count = 1
@@ -1076,7 +1082,7 @@ def warning(sec):
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
 
 def light_show():
     try:
@@ -1100,4 +1106,4 @@ def light_show():
         return True
     except Exception as e:
         print(e)
-		return False
+        return False
