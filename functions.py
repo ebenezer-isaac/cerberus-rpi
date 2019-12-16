@@ -6,7 +6,7 @@ from drivers.rtc import RTC
 fps = FingerPi()
 lcd = LCD()
 rtc = RTC()
-host = "192.168.0.7"
+host = "192.168.1.3"
 user = "phpmyadmin"
 password = ""
 database = "cerberus"
@@ -173,12 +173,19 @@ def get_stud_sub_list(subjectid, batchid):
 #---------------Sync---------------------------------------	
 
 def sync_all():
+    print("sync timetable")
     sync_timetable(1,1)
+    print("sync slots")
     sync_slots()
+    print("sync fac_det")
     sync_fac_det()
+    print("sync stud_det")
     sync_stud_det()
+    print("sync stud_sub")
     sync_stud_sub()
+    print("sync attendance")
     sync_attendance()
+    print("sync templates")
     sync_templates()
 
 def sync_attendance():
@@ -213,6 +220,7 @@ def sync_attendance():
 def sync_timetable(week=0,year=0):
     try:
         myconn = pymysql.connect(host,user,password,database)
+        print("got connection")
         cur = myconn.cursor() 
         if week==0 and year==0:
             try:
@@ -287,7 +295,8 @@ def sync_timetable(week=0,year=0):
             except:
                 return False
         return True
-    except:
+    except Exception as err:
+        print err
         return False
     
 def sync_fac_det():
@@ -470,10 +479,12 @@ def sync_templates ():
                                 upload_template(user_id, template_id,dateid,timeid)
                         else:
                             download_template(user_id,template_id)
-        except:
+        except Exception as e:
+            print e
             return False
         return True
-    except:
+    except Exception as e:
+        print e
         return False
 
 def upload_template(user_id,template_id, dateid, timeid):
@@ -494,9 +505,11 @@ def upload_template(user_id,template_id, dateid, timeid):
             myconn.close()
             print("Uploaded Successfully")
             return True
-        except:
+        except Exception as e:
+            print e
             return False
-    except:
+    except Exception as e:
+        print e
         return False
 
 def download_template(user_id, template_id):
@@ -518,9 +531,11 @@ def download_template(user_id, template_id):
                 set_meta_temp_dateTimeStatus(user_id,template_id,y[1],y[2],1)
             myconn.close()
             return True
-        except:
+        except Exception as e:
+             print e
              return False
-    except:
+    except Exception as e:
+        print e
         return False
             
 def delete_template(user_id, template_id):
@@ -609,7 +624,7 @@ def enroll(user_id,template_id):
                         flag=1
                         get_template(str(user_id)+"-"+str(template_id),id)
                         today = date.today()
-                        time = datetime.datetime.now().strftime("%H:%M:%S"),1
+                        time = datetime.datetime.now().strftime("%H:%M:%S")
                         set_meta_temp_dateTimeStatus(user_id,template_id,today,time,1)
                         text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','rb')
                         template = text.read()
@@ -862,6 +877,7 @@ def get_meta_temp_dateTimeStatus(template_name):
 def set_meta_temp_dateTimeStatus(user_id,template_id,date,time,status):
     try:
         dateTimeStatus=str(date)+","+str(time)+","+str(status)
+        print dateTimeStatus
         meta_template = json.load(open("./docs/meta_template.json"))
         meta_template[str(user_id)+"-"+str(template_id)]=dateTimeStatus
         with open("./docs/meta_template.json", 'w') as file:
