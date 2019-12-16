@@ -24,7 +24,7 @@ sleep(1000)
 print(delete_all())
 enroll('2017033800104747','1')
 #get('2017033800104747','1')
-upload_template('2017033800104747','1',1,1)
+#upload_template('2017033800104747','1',1,1)
 def attendance():
     next_schedule=get_next_schedule()
     if next_schedule==2:

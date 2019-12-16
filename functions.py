@@ -491,7 +491,7 @@ def sync_templates ():
                         if time_sort[0]==db_dateTime:
                             dateid = get_dateId(rpi_date)
                             timeid = get_timeId(rpi_time)
-                            if not dateid==0 and timeid==0:
+                            if not dateid==0 and not timeid==0:
                                 upload_template(user_id, template_id,dateid,timeid)
                         else:
                             delete_template(user_id,template_id)
@@ -501,7 +501,7 @@ def sync_templates ():
                         elif time_sort[0]==db_dateTime:
                             dateid = get_dateId(rpi_date)
                             timeid = get_timeId(rpi_time)
-                            if not dateid==0 and timeid==0:
+                            if not dateid==0 and not timeid==0:
                                 upload_template(user_id, template_id,dateid,timeid)
                         else:
                             download_template(user_id,template_id)
@@ -514,6 +514,7 @@ def sync_templates ():
         return False
 
 def upload_template(user_id,template_id, dateid, timeid):
+    print('Uploading template')
     try:
         myconn = pymysql.connect(host,user,password,database)
         cur = myconn.cursor() 
@@ -662,7 +663,8 @@ def enroll(user_id,template_id):
                         text.close()
                         dateid = get_dateId(today)
                         timeid = get_timeId(time)
-                        if not dateid==0 and timeid ==0:
+                        print(dateid,timeid)
+                        if not dateid==0 and not timeid==0:
                             upload_template(user_id,template_id,dateid,timeid)
                         return True
                     else:
@@ -793,6 +795,7 @@ def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
                 myconn.commit()
                 return get_timeId(time)
             except Exception as e:
+                print e
                 myconn.close()
                 return 0
         return timeid
@@ -818,6 +821,7 @@ def get_dateId(date=date.today):
                 myconn.commit()
                 return get_dateId(date)
             except Exception as e:
+                print e
                 myconn.close()
                 return 0
         return dateid
@@ -845,6 +849,7 @@ def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datet
                 myconn.close()
                 return get_weekId(week,year)
             except Exception as e:
+                print e
                 myconn.close()
                 return 0
         return weekid
@@ -932,7 +937,7 @@ def set_meta_temp_dateTimeStatus(user_id,template_id,date,time,status):
         
 def get_template(template_name,fps_id):
     try:
-        if fps.checkEnrolled(id):
+        if fps.checkEnrolled(fps_id):
             response=fps.getTemplate(fps_id)
             template=open("./templates/"+str(template_name)+".txt","wb")
             template.write(str(response))
