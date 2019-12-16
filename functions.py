@@ -40,22 +40,25 @@ def setup():
         beep(4);
         fps.setLED(True)
         return True
-    except:
+    except Exception as e:
+	    print(e)
         return False
 
 def delete_fingerprint(id):
     try:
         fps.deleteId(id);
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def delete_all():
     try:
         fps.deleteAll()
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
     
 def backup_templates():
     try:
@@ -66,8 +69,9 @@ def backup_templates():
                 print('Fingerprint found at ID '+str(i))
                 print(get_template("backup-id-"+str(i),i))
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 def identify():
     try:
         fps.waitForFinger()
@@ -80,8 +84,9 @@ def identify():
         else:
             print(id)
             return get_map_prn(id)
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def print_enrolled():
     try:
@@ -95,8 +100,9 @@ def print_enrolled():
                 found = found+1
             i=i+1
         return True
-    except:
-        return Flase
+    except Exception as e:
+        print(e)
+		return Flase
 
 def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
     try:
@@ -107,8 +113,9 @@ def get_slotId(time=datetime.datetime.now().strftime("%H:%M:%S")):
                 if x[1]<time<x[2]:
                     return x[0]
         return 0
-    except:
-        return 0
+    except Exception as e:
+        print(e)
+		return 0
 
 def get_next_schedule():
     try:
@@ -127,7 +134,7 @@ def get_next_schedule():
                         x.pop(1)
                         today.append(x)
         except Exception as e:
-            print e
+            print(e)
             return -1
         if len(today)==0:
             return 3
@@ -142,7 +149,8 @@ def get_next_schedule():
                 if x[2]>time:
                     return [1,x]
             return 2
-    except:
+    except Exception as e:
+	    print(e)
         return False
 
 def att_valid(prn,subjectid,batchid):
@@ -154,8 +162,9 @@ def att_valid(prn,subjectid,batchid):
                 if x[0]==str(prn) and x[1]==str(subjectid) and x[2]==str(batchid):
                     return True
         return False
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def get_stud_sub_list(subjectid, batchid):
     studs=[]
@@ -167,8 +176,9 @@ def get_stud_sub_list(subjectid, batchid):
                 if x[1]==str(subjectid) and x[2]==str(batchid):
                     studs.append(x[0])
         return studs
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 #---------------Sync---------------------------------------	
 
@@ -208,15 +218,17 @@ def sync_attendance():
                     cur.execute(sql)
                     myconn.commit()
                     flag=1
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
+					pass
         if flag==1:
             file = open('./docs/attendance.txt', "w")
             file.write("")
             file.close()
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 def sync_timetable(week=0,year=0):
     try:
         myconn = pymysql.connect(host,user,password,database)
@@ -246,10 +258,12 @@ def sync_timetable(week=0,year=0):
                                     endTime = '0'+endTime
                                 file.write(str(y[0])+","+str(y[1])+","+startTime+","+endTime+","+str(y[4])+","+str(y[5])+","+str(y[6])+"\n")
                             file.close()
-                    except:
-                        return False
-            except:
-                return False
+                    except Exception as e:
+                        print(e)
+						return False
+            except Exception as e:
+                print(e)
+				return False
         elif week==1 and year==1:
             week= datetime.datetime.now().isocalendar()[1]
             year = datetime.datetime.now().year
@@ -271,8 +285,9 @@ def sync_timetable(week=0,year=0):
                             endTime = '0'+endTime
                         file.write(str(y[0])+","+str(y[1])+","+startTime+","+endTime+","+str(y[4])+","+str(y[5])+","+str(y[6])+"\n")
                     file.close()
-            except:
-                return False
+            except Exception as e:
+                print(e)
+				return False
         else:
             try:
                 sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
@@ -292,11 +307,12 @@ def sync_timetable(week=0,year=0):
                             endTime = '0'+endTime
                         file.write(str(y[0])+","+str(y[1])+","+startTime+","+endTime+","+str(y[4])+","+str(y[5])+","+str(y[6])+"\n")
                     file.close()
-            except:
-                return False
+            except Exception as e:
+				print(e)
+				return False
         return True
-    except Exception as err:
-        print err
+    except Exception as e:
+        print(e)
         return False
     
 def sync_fac_det():
@@ -333,12 +349,14 @@ def sync_fac_det():
                 file.close()
                 with open("./docs/meta_template.json", 'w') as file:
                     file.write(json.dumps(meta_template, sort_keys=True))
-        except:
+        except Exception as e:
+		    print(e)
             return False
         for x in list(set(rpi_facs) - set(db_facs)):
             delete_user(x)
         return True
-    except:
+    except Exception as e:
+	    print(e)
         return False
     
 def sync_stud_det():
@@ -375,13 +393,15 @@ def sync_stud_det():
                 file.close()
                 with open("./docs/meta_template.json", 'w') as file:
                     file.write(json.dumps(meta_template, sort_keys=True))
-        except:
-            return False
+        except Exception as e:
+            print(e)
+			return False
         for x in list(set(rpi_studs) - set(db_studs)):
             delete_user(x)
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def sync_slots():
     try:
@@ -399,11 +419,13 @@ def sync_slots():
                 for x in result:
                     file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
                 file.close()
-        except:
-            return False
+        except Exception as e:
+            print(e)
+			return False
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def sync_stud_sub():
     try:
@@ -421,11 +443,13 @@ def sync_stud_sub():
                 for x in result:
                     file.write(str(x[0])+","+str(x[1])+","+str(x[2])+"\n")
                 file.close()
-        except:
-            return False
+        except Exception as e:
+            print(e)
+			return False
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 #---------------Templates---------------------------------------
 
@@ -542,15 +566,16 @@ def delete_template(user_id, template_id):
     try:
         try:
             os.remove('./templates/'+str(user_id)+'-'+str(template_id)+'.txt')
-        except:
+        except Exception as e:
             pass
         meta_template = json.load(open("./docs/meta_template.json"))
         meta_template[str(user_id)+"-"+str(template_id)]="1970-01-01,00:00:00,0"
         with open("./docs/meta_template.json", 'w') as file:
             file.write(json.dumps(meta_template, sort_keys=True))
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def set_stud_templates(studs):
     id=0
@@ -570,8 +595,9 @@ def set_stud_templates(studs):
                     id = id+1
                 template_id=template_id+1
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 def set_fac_templates():
     id=199
     try:
@@ -589,8 +615,9 @@ def set_fac_templates():
                         id = id+1
                     template_id=template_id+1
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 #---------------Enroll---------------------------------------	
 
 def enroll(user_id,template_id):
@@ -653,8 +680,9 @@ def enroll(user_id,template_id):
             if flag==0:
                 return False
         fps.deleteId(id)
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def enroll_main(id):
     try:
@@ -738,8 +766,9 @@ def enroll_main(id):
                 fps.deleteId(id)
                 sleep(1000)
         return response
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 #---------------Utilities---------------------------------------
 
@@ -759,12 +788,13 @@ def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
                 cur.execute(sql)
                 myconn.commit()
                 return get_timeId(time)
-            except:
+            except Exception as e:
                 myconn.close()
                 return 0
         return timeid
-    except:
+    except Exception as e:
         myconn.close()
+		print(e)
         return 0
 
 def get_dateId(date=date.today):
@@ -783,12 +813,13 @@ def get_dateId(date=date.today):
                 cur.execute(sql)
                 myconn.commit()
                 return get_dateId(date)
-            except:
+            except Exception as e:
                 myconn.close()
                 return 0
         return dateid
-    except:
+    except Exception as e:
         myconn.close()
+		print(e)
         return 0
     
 
@@ -809,23 +840,24 @@ def get_weekId(week=datetime.datetime.now().isocalendar()[1],year=datetime.datet
                 myconn.commit()
                 myconn.close()
                 return get_weekId(week,year)
-            except:
+            except Exception as e:
                 myconn.close()
                 return 0
         return weekid
-    except:
+    except Exception as e:
         myconn.close()
+		print(e)
         return 0
     
 def delete_user(user_id):
     try:
         try:
             os.remove('./templates/'+str(user_id)+'-1.txt')
-        except:
+        except Exception as e:
             pass
         try:
             os.remove('./templates/'+str(user_id)+'-2.txt')
-        except:
+        except Exception as e:
             pass
         meta_template = json.load(open("./docs/meta_template.json"))
         meta_template.pop(str(user_id)+"-1", None)
@@ -833,16 +865,18 @@ def delete_user(user_id):
         with open("./docs/meta_template.json", 'w') as file:
             file.write(json.dumps(meta_template, sort_keys=True)) 
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def get_map_prn(id):
     try:
         map = json.load(open("./docs/map.json"))
         user_id = map[str(id)]
         return user_id
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def set_map_prn(id,user_id):
     try:
@@ -851,8 +885,9 @@ def set_map_prn(id,user_id):
         with open("./docs/map.json", 'w') as file:
             file.write(json.dumps(map, sort_keys=True))
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 def clear_map():
     try:
         map = json.load(open("./docs/map.json"))
@@ -863,16 +898,18 @@ def clear_map():
         with open("./docs/map.json", 'w') as file:
             file.write(json.dumps(map, sort_keys=True))
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def get_meta_temp_dateTimeStatus(template_name):
     try:
         meta_template = json.load(open("./docs/meta_template.json"))
         dateTimeStatus = meta_template[str(template_name)]
         return dateTimeStatus
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def set_meta_temp_dateTimeStatus(user_id,template_id,date,time,status):
     try:
@@ -883,8 +920,9 @@ def set_meta_temp_dateTimeStatus(user_id,template_id,date,time,status):
         with open("./docs/meta_template.json", 'w') as file:
             file.write(json.dumps(meta_template, sort_keys=True))
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
         
 def get_template(template_name,fps_id):
@@ -897,8 +935,9 @@ def get_template(template_name,fps_id):
             return True
         else:
             return False
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def set_template(template_name,fps_id):
     try:
@@ -907,8 +946,9 @@ def set_template(template_name,fps_id):
         text.close()
         response = fps.setTemplate(fps_id,str(template_data))
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def println(text):
     lcd.println(text)
@@ -938,7 +978,7 @@ def getKeyPress():
                     return MATRIX[i][j]
             GPIO.output(COL[j],1)
         return ''
-    except:
+    except Exception as e:
         return ''
 
 def getKey():
@@ -952,8 +992,9 @@ def getKey():
                             time.sleep(0.2)
                         return MATRIX[i][j]
                 GPIO.output(COL[j],1)
-    except:
-        return False
+    except Exception as e:
+		print(e)
+		return False
 #-------------------------Lighting------------------------------------
 
 def beep(sec):
@@ -973,8 +1014,9 @@ def beep(sec):
         GPIO.output(GreenPin,False)
         GPIO.output(RedPin,False)
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def blinkg(sec):
     count = 1
@@ -987,8 +1029,9 @@ def blinkg(sec):
             count = count+1
         GPIO.output(GreenPin,False)
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def blinkr(sec):
     count = 1
@@ -1001,8 +1044,9 @@ def blinkr(sec):
             count = count+1
         GPIO.output(RedPin,False)
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def blinkalt(sec):
     count = 1
@@ -1012,8 +1056,9 @@ def blinkalt(sec):
             blinkr(1)
             count = count+1
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
     
 def warning(sec):
     count = 1
@@ -1029,8 +1074,9 @@ def warning(sec):
         GPIO.output(RedPin,False)
         GPIO.output(BuzzPin,False)
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
 
 def light_show():
     try:
@@ -1052,5 +1098,6 @@ def light_show():
             GPIO.output(LedPin1,False)
             GPIO.output(LedPin2,False)
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
+		return False
