@@ -133,22 +133,12 @@ def enroll_menu():
         printleft("B - SeleRegistration");
         printleft("C - Add Admin");
         printleft("# - Abort");
-        key = getKey();
+        key = getKey()
         clrscr();
         if key == 'A':
-            clrscr();
-            println("Autonomous");
-            println("Fingerprint");
-            println("Enrollment");
-            sleep(1000)
             enroll_cont();
             return
         elif key == 'B':
-            clrscr();
-            println("Selected PRN");
-            println("Fingerprint");
-            println("Enrollment");
-            sleep(1000)
             enroll_sele();
             return
         elif key == 'C':
@@ -164,161 +154,59 @@ def enroll_menu():
         else:
             println("Invalid Input");
             sleep(1500);
-"""
+
 def enroll_cont():
     clrscr();
-    printline("A - Cont from Roll");
-    printline("B - New Database");
+    printline("Autonomous");
+    printline("Enrollment");
+    println("A to Continue")
     printline("Any Key to Abort");
-    int flag = 0;
-    int enrollid = 0;
-    int roll = 0;
-    int division = 0;
-    char key = ' ';
-    int limit = 0;
-    key = keypad.waitForKey();
+    key = getKey()
     clrscr();
-print get_class_studs(2)
-
-    switch (key)
-  {
-    case 'A':
-      flag = 1;
-      division = getClass();
-      clrscr();
-      do
-      {
-        clrscr();
-        printline("Roll No");
-        printline("to Continue from");
-        delay(2000);
-        roll = getRoll();
-        enrollid = division * 60;
-        if (division == 0)
-        {
-          if (roll < fyjump || roll >= fyjump + 60)
-          {
+    if key == 'A':
+        classID = get_class()
+        studs = get_class_studs(classID)
+        index = 0
+        while index < len(studs):
             clrscr();
-            printline("Invalid Roll No");
-            printline("Roll !< First Roll)");
-            printline("Roll !> Lab Limit)");
-            printline("First Roll :" + String(fyjump));
-            delay(1500);
-            flag = 0;
-          }
-          else
-          {
-            enrollid = enrollid + roll - fyjump;
-            limit = 59;
-          }
-        }
-        else if (division == 1)
-        {
-          if (roll < syjump || roll >= syjump + 60)
-          {
-            clrscr();
-            printline("Invalid Roll No");
-            printline("Roll !< First Roll)");
-            printline("Roll !> Lab Limit)");
-            printline("First Roll :" + String(syjump));
-            delay(1500);
-            flag = 0;
-          }
-          else
-          {
-            enrollid = enrollid + roll - syjump;
-            limit = 119;
-          }
-        }
-        else if (division == 2)
-        {
-          if (roll < tyjump || roll >= tyjump + 60)
-          {
-            clrscr();
-            printline("Invalid Roll No");
-            printline("Roll !< First Roll)");
-            printline("Roll !> Lab Limit)");
-            printline("First Roll :" + String(tyjump));
-            delay(1500);
-            flag = 0;
-          }
-          else
-          {
-            enrollid = enrollid + roll - tyjump;
-            limit = 179;
-          }
-        }
-      } while (flag != 1);
-      break;
-    default : flag = 0;
-      break;
-  }
-
-  if (flag == 1)
-  {
-    fps.SetLED(true);
-    do
-    {
-      clrscr();
-      printline("Roll Number :" + String(roll));
-      printline("A- Continue");
-      printline("B- Skip    C- Prev");
-      printline("Any to Abort");
-      char key = ' ';
-      key = keypad.waitForKey();
-      switch (key)
-      {
-        case 'A':
-          flag = 1;
-          break;
-        case 'B':
-          flag = 2;
-          roll++;
-          enrollid++;
-          break;
-        case 'C':
-          flag = 2;
-          roll--;
-          enrollid--;
-          break;
-        default :
-          flag = 0;
-          break;
-      }
-      if (flag == 1)
-      {
-        if (fps.CheckEnrolled(enrollid))
-        {
-          clrscr();
-          printline("Roll No :" + String(roll));
-          printline("Already Enrolled");
-          delay(2000);
-        }
-        else
-        {
-          clrscr();
-          printline("Roll Number :" + String(roll));
-          printline("Prss Fingr to Enroll");
-          while (fps.IsPressFinger() == false)
-          {}
-          printline("Reading Finger");
-          fps.EnrollStart(enrollid);
-          enroll();
-          String details = "Enrolled " + String(division) + " " + print3digits(roll);
-          writeCLog(details);
-          roll++;
-          enrollid++;
-        }
-      }
-    } while (flag != 0  && enrollid <= limit );
-  }
-  if (flag == 0)
-  {
-    clrscr();
-    printline("Exit Cont Registrtn");
-    delay(1000);
-    clrscr();
-  }
+            println("Roll Number :" + str(studs[index][1]));
+            println("A- Continue");
+            println("B- Skip    C- Prev");
+            println("Any to Abort");
+            key = getKey()
+            if key == 'A':
+                id = 1
+                while id<3:
+                    clrscr()
+                    if check_template(prn,id):
+                        println("Fingerprint "+str(id))
+                        println("Already")
+                        println("Exists")
+                        sleep(1000)
+                    else:
+                        clrscr();
+                        println("PRN:"+str(prn))
+                        println("Fingerprint "+str(id))
+                        println("Press A to Continue");
+                        println("Any Key to Skip");
+                        key = getKey():
+                        if key == 'A':
+	                    enroll(studs[index][0],id)
+                    id = id +1
+            elif key == 'B':
+                pass
+            elif key == 'C':
+                index = index -2
+            else:
+                clrscr()
+                println("Exiting");
+                sleep(500);
+                return
+    else:
+        clrscr()
+        printline("Exiting");
+        sleep(500);
+        return
 
 def enroll_sele():
     while True:
@@ -334,24 +222,31 @@ def enroll_sele():
             id = 1
             while id<3:
                 clrscr()
-                if check_template_exists(prn,id):
-                    println("Fingerprint"+str(id))
+                if check_template(prn,id):
+                    println("Fingerprint "+str(id))
                     println("Already")
                     println("Exists")
                     sleep(1000)
                 else:
-                    enroll(prn,id)
+                    clrscr();
+                    println("PRN:"+str(prn))
+                    println("Fingerprint "+str(id))
+                    println("Press A to Continue");
+                    println("Any Key to Skip");
+                    key = getKey()
+                    if key == 'A':
+                        enroll(prn,id)
                 id = id +1
-    else:
-        clrscr();
-        printline("Exiting");
-        sleep(500)
-        return
+        else:
+            clrscr();
+            printline("Exiting");
+            sleep(500)
+            return
 
 def faculty_enroll():
     while True:
         clrscr();
-        println("Selected PRN")
+        println("Faculty")
         println("Enrollment")
         println("Press A to Continue");
         println("Any Key to Abort");
@@ -362,21 +257,19 @@ def faculty_enroll():
             id = 1
             while id<3:
                 clrscr()
-                if check_template_exists(prn,id):
+                if check_template(faculty_id,id):
                     println("Fingerprint"+str(id))
                     println("Already")
                     println("Exists")
                     sleep(1000)
                 else:
-                    enroll(prn,id)
+                    enroll(faculty_id,id)
                 id = id +1
     else:
         clrscr();
         printline("Exiting");
         sleep(500)
         return
-"""
-pass
 main_menu()
 #print 'outside while loop'
 #sync_class()

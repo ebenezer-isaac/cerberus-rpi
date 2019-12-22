@@ -39,6 +39,16 @@ def setup():
         print(e)
         return False
 
+def check_template(user_id,template_id):
+    try:
+        text = open('./templates/'+str(user_id)+"-"+str(template_id)+'.txt','r')
+        template = text.read()
+        text.close()
+        return True
+    except Exception as e:
+        print e
+        return False
+
 def authorization():
     clrscr()
     println("Authorization")
@@ -97,7 +107,7 @@ def get_class_studs(classID):
                 x = x.split(",")
                 x[2] = x[2].replace("\n","")
                 if x[0]==str(classID):
-                    studs.append(x[2])
+                    studs.append(x[2],x[1])
         return studs
     except Exception as e:
         print(e)
@@ -1019,14 +1029,13 @@ def get_class():
     return classID
 
 def get_roll():
-    roll = 0;
     Roll = "";
-    flag = 0;
+    roll = 0
     clrscr()
     printleft("A - Clear")
     printleft("B - Delete")
     printleft("* - Enter")
-    while flag == 0:
+    while True:
         printleftline("Roll No: " + Roll,4)
         key = getKey()
         if key == 'C' or key == 'D' or key == '#':
@@ -1039,7 +1048,7 @@ def get_roll():
             else:
                 Roll=""
         elif key == '*':
-            roll = int(Roll)
+            roll= int(Roll)
             if 150>roll>0:
                 clrscr()
 		return roll
@@ -1049,6 +1058,98 @@ def get_roll():
                 println("Enter Roll No Again")
                 Roll = ""
                 roll = 0
+                sleep(1500)
+		clrscr()
+                printleft("A - Clear")
+                printleft("B - Delete")
+                printleft("* - Enter")
+        else:
+            Roll = str(Roll) + str(key)
+
+def get_faculty_id():
+    facs = []
+    try:
+        with open('./docs/fac-det.txt', "r") as fp:
+            for x in fp.readlines():
+                x = x.split(",")
+                facs.append(x[0])
+    except Exception as e:
+        return False
+    print facs
+    Roll = "";
+    clrscr()
+    printleft("A - Clear")
+    printleft("B - Delete")
+    printleft("* - Enter")
+    while True:
+        printleftline("Faculty ID : " + Roll,4)
+        key = getKey()
+        if key == 'C' or key == 'D' or key == '#':
+            beep(1)
+        elif key == 'A':
+            Roll = ""
+        elif key == 'B':
+            if len(Roll) > 0:
+                Roll = Roll[0:-1]
+            else:
+                Roll=""
+        elif key == '*':
+            if Roll in facs:
+                clrscr()
+	        return Roll
+            else:
+                clrscr()
+                println("Invalid Faculty ID")
+                println("Facutly Not Found")
+                println("with that ID")
+                println("Enter ID Again")
+                sleep(1500)
+		clrscr()
+                printleft("A - Clear")
+                printleft("B - Delete")
+                printleft("* - Enter")
+        else:
+            Roll = str(Roll) + str(key)
+
+def get_prn():
+    studs = []
+    try:
+        with open('./docs/stud-det.txt', "r") as fp:
+            for x in fp.readlines():
+                x = x.split(",")
+                x[2] = x[2].replace("\n","")
+                studs.append(x[2])
+    except Exception as e:
+        print e
+        return False
+    print studs
+    Roll = "";
+    clrscr()
+    printleft("A - Clear")
+    printleft("B - Delete")
+    printleft("* - Enter")
+    while True:
+        printleftline("PRN:" + Roll,4)
+        key = getKey()
+        if key == 'C' or key == 'D' or key == '#':
+            beep(1)
+        elif key == 'A':
+            Roll = ""
+        elif key == 'B':
+            if len(Roll) > 0:
+                Roll = Roll[0:-1]
+            else:
+                Roll=""
+        elif key == '*':
+            if Roll in studs:
+                clrscr()
+	        return Roll
+            else:
+                clrscr()
+                println("Invalid PRN")
+                println("Student Not Found")
+                println("with that PRN")
+                println("Enter PRN Again")
                 sleep(1500)
 		clrscr()
                 printleft("A - Clear")
@@ -1226,7 +1327,6 @@ def set_template(template_name,fps_id):
         return False
 
 def println(text):
-    print "original :"+str(text)+":"
     length = len(text);
     indent = ((20 - length) / 2);
     i = 0
@@ -1237,7 +1337,7 @@ def println(text):
     while len(text) < 20:
         text = text + " ";
         i = i+1
-    print "formated :"+str(text)+":"
+    print "lcd :"+str(text)+":"
     lcd.println(text)
 
 def printline(text,line):
