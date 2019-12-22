@@ -49,7 +49,7 @@ def check_template(user_id,template_id):
         print e
         return False
 
-def authorization():
+def authorization(schedule_id = 0):
     clrscr()
     println("Authorization")
     println("Required")
@@ -69,6 +69,8 @@ def authorization():
                     if 200>id>149:
                         faculty_id = get_map_prn(id)
                         faculty_name = get_fac_name(faculty_id)
+                        if not schedule_id == 0:
+                            start_lab(schedule_id,faculty_id)
                         return [True,faculty_id, faculty_name]
                     else:
                         clrscr()
@@ -99,6 +101,50 @@ def authorization():
             else:
                 pass
 
+def take_attendance(schedule_id, abbr, batch):
+    clrscr()
+    println("Subject :")
+    println(str(abbr))
+    println("Batch :"+str(batch))
+    while True: 
+        id = 0
+        key = getKeyPress()
+        if fps.isPressFinger():
+            if fps.captureFinger(False):
+                if fps.sendCommand('Identify'):
+                    response = [fps.getResponse(), None]
+                    if len(str(response[0]['Parameter']))>3:
+                        response[0]['Parameter']='200'
+                    id = response[0]['Parameter']
+                    if 0<id<150:
+                        prn = get_map_prn(id)
+                        insert_attendance(schedule_id,faculty_id)
+                    else:
+                        clrscr()
+                        println("Finger")
+                        println("Not Found")
+                        println("Try Again")
+                        sleep(1000)
+                        clrscr()
+                        println("Subject :")
+                        println(str(abbr))
+                        println("Batch :"+str(batch))
+            else:
+                clrscr()
+		println("Finger Capture")
+		println("Failed")
+		println("Try Again")
+                sleep(1000)
+                clrscr()
+                println("Subject :")
+                println(str(abbr))
+                println("Batch :"+str(batch))
+        else:
+            if key=='#':
+                main_menu()
+            else:
+                pass
+
 def get_class_studs(classID):
     studs=[]
     try:
@@ -107,7 +153,7 @@ def get_class_studs(classID):
                 x = x.split(",")
                 x[2] = x[2].replace("\n","")
                 if x[0]==str(classID):
-                    studs.append(x[2],x[1])
+                    studs.append([x[2],x[1]])
         return studs
     except Exception as e:
         print(e)
@@ -762,8 +808,8 @@ def enroll(user_id,template_id):
     try:
         lcd.clrscr()
         lcd.println("Enroll Start")
-        lcd.println(""+str(user_id))
-        lcd.println(""+str(template_id))
+        lcd.println("ID :"+str(user_id))
+        lcd.println("Template ID :"+str(template_id))
         sleep(1000)
         trialCount=0
         id=0

@@ -16,80 +16,58 @@ println('Project Cerberus')
 println('The')
 println('Attndance Initiative')
 setup()
-println('Syncing Files')
-#sync_all()
-#println('Sync Complete')
-#sleep(1000)
-#clrscr()
-#print(delete_all())
-#enroll('1','2')
-#print_enrolled()
-#println("Fac Templates")
-#print('setting templates')
-#println("Deleting All")
-#delete_all()
-#println("Done")
-#sleep(1000)
-#clrscr()
-#println("Check Lab")
-#print('....'+str(get_fac_name(1))+'....')
-"""
+sleep(500)
+sync_all()
+print(delete_all())
 while True:
     next_schedule=get_next_schedule()
     if next_schedule==2:
         clrscr()
-        print('All Labs for Today are over')
         println("All Labs Over")
         while True:
             pass
     elif next_schedule==3:
         clrscr()
-        print('No Labs for today')
         println("No Labs Today")
         while True:
             pass
     elif next_schedule==-1:
         clrscr()
-        print('Fatal Error')
         println("Fatal Error")
-        println("Sync")
-        println("Fatal Error")
+        println("Timetable:Error")
+        println("Restart to")
+        println("Try Again")
         while True:
             pass
     elif next_schedule[0]==0:
         clrscr()
-        print('Lab has started')
         println("Lab has started")
         println(str(next_schedule[1][3]))
         println(str(next_schedule[1][4]))
         studs = get_stud_sub_list(next_schedule[1][3],next_schedule[1][4])
-        print('students in '+str(next_schedule[1])+" are listed below")
-        print(studs)
         sleep(1000)
         clrscr()
-        print('setting fingerprints of student who have opted for the subject '+str(next_schedule[1][3])+' of batch '+str(next_schedule[1][4]))
-        println("Setting Fac")
+        delete_all()
         set_fac_templates()
-        println("Setting Stud")
-        print(set_stud_templates(studs))
-        sleep(1000)
-        println("Strtng Att")
-        #wait for time to start
-        clrscr()
-        faculty_identification()
-        take_attendance()
+        set_stud_templates(studs)
+        auth_result  = authorization(next_schedule[0])
+        while not auth_result:
+            clrscr()
+            println("Canceled")
+            sleep(1000)
+        else:
+            clrscr()
+            println(str(auth_result[2]))
+            println("Authorized")
+            println("<<>>")
+            println("Lab Started")
+            sleep(1000)
+            take_attendance()
     elif next_schedule[0]==1:
-        print('Lab is going to start')
-        studs = get_stud_sub_list(next_schedule[1][3],next_schedule[1][4])
-        print('students in '+str(next_schedule[1])+" are listed below")
-        print(studs)
-	print('setting fingerprints of student who have opted for the subject '+str(next_schedule[1][3])+' of batch '+str(next_schedule[1][4]))
-        print(set_stud_templates(studs))
-"""
+        #wait for lab to start
 def main_menu():
     clrscr()
     println("Main Menu")
-    beep(3)
     clrscr()
     while True:
         clrscr()
@@ -127,6 +105,7 @@ def main_menu():
             sleep(1500)
 
 def enroll_menu():
+    delete_all()
     while True:
         clrscr()
         printleft("A - ContRegistration")
@@ -142,12 +121,7 @@ def enroll_menu():
             enroll_sele()
             return
         elif key == 'C':
-            clrscr()
-            println("Faculty")
-            println("Fingerprint")
-            println("Enrollment")
-            sleep(1000)
-            enroll_sele()
+            faculty_enroll()
             return
         elif key == '#':
             return
@@ -157,10 +131,10 @@ def enroll_menu():
 
 def enroll_cont():
     clrscr()
-    printline("Autonomous")
-    printline("Enrollment")
+    println("Autonomous")
+    println("Enrollment")
     println("A to Continue")
-    printline("Any Key to Abort")
+    println("Any Key to Abort")
     key = getKey()
     clrscr()
     if key == 'A':
@@ -196,15 +170,20 @@ def enroll_cont():
             elif key == 'B':
                 pass
             elif key == 'C':
-                index = index -2
+                if not index==0:
+                    index = index -2
             else:
                 clrscr()
                 println("Exiting")
                 sleep(500)
                 return
+            index = index+1
+        clrscr()
+        println("All Students Over")  
+        sleep(1000)
     else:
         clrscr()
-        printline("Exiting")
+        println("Exiting")
         sleep(500)
         return
 
@@ -239,7 +218,7 @@ def enroll_sele():
                 id = id +1
         else:
             clrscr()
-            printline("Exiting")
+            println("Exiting")
             sleep(500)
             return
 
@@ -276,17 +255,6 @@ main_menu()
 #print start_lab(253,1)
 #print insert_attendance(253,'2017033800104747')
 #get_roll()
-auth_result  = authorization()
-print auth_result
-if not auth_result:
-    clrscr()
-    println("Canceled")
-else:
-    clrscr()
-    println("Authorized")
-    println("Proceeding")
-    sleep(1000)
-    print auth[1]
 
 def take_attendance():
     id = 0
