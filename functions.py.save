@@ -89,20 +89,6 @@ def authorization():
             else:
                 pass
 
-def get_class_studs(classID):
-    studs=[]
-    try:
-        with open('./docs/stud-det.txt', "r") as fp:
-            for x in fp.readlines():
-                x = x.split(",")
-                x[2] = x[2].replace("\n","")
-                if x[0]==str(classID):
-                    studs.append(x[2])
-        return studs
-    except Exception as e:
-        print(e)
-        return False
-
 def delete_fingerprint(id):
     try:
         fps.deleteId(id);
@@ -1237,7 +1223,7 @@ def println(text):
     while len(text) < 20:
         text = text + " ";
         i = i+1
-    print "formated :"+str(text)+":"
+    print "lcd :"+str(text)+":"
     lcd.println(text)
 
 def printline(text,line):

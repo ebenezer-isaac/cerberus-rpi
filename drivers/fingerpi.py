@@ -116,17 +116,22 @@ class FingerPi():
         while self.isPressFinger()==True:
             time.sleep(0.13)
     def identify(self):
-        self.waitForFinger()
-        if self.captureFinger(False):
-            if self.sendCommand('Identify'):
-                response = [self.getResponse(), None]
-                if len(str(response[0]['Parameter']))>3:
-                    response[0]['Parameter']='200'
-                return response[0]['Parameter']
+        try:
+            self.waitForFinger()
+	    if self.captureFinger(False):
+                if self.sendCommand('Identify'):
+                    response = [self.getResponse(), None]
+                    if len(str(response[0]['Parameter']))>3:
+                        response[0]['Parameter']='200'
+                    print response
+                    return response[0]['Parameter']
+                else:
+                    raise RuntimeError("Couldn't send packet")
             else:
-                raise RuntimeError("Couldn't send packet")
-        else:
-            return 200
+                return 200
+	except Exception as e:
+	    print('error from driver')
+	    print(e)
     def captureFinger(self, best_image = False):
         self.setLED(True)
         if best_image:
