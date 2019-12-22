@@ -5,8 +5,8 @@
 #sudo apt-get install python-rpi.gpio python3-rpi.gpio
 #pip install mysql-python pyserial RPi.GPIO wiringPi gpio
 #echo "dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline rootwait" > /boot/cmdline.txt
-#sudo systemctl mask serial-getty@ttyAMA0.service
-#gpio mode 15 ALT0; gpio mode 16 ALT0
+#sudo systemctl mask serial-getty@ttyAMA0.
+#gpio mode 15 ALT0 gpio mode 16 ALT0
 #sudo apt-get install python3-mysql.connector
 #To run this python script on startup (ignore quotes)
 #Run 'crontab -e'
@@ -92,7 +92,7 @@ def main_menu():
     beep(3)
     clrscr()
     while True:
-        clrscr();
+        clrscr()
         printleft("A- Check Connection")
         printleft("B- Sync Now")
         printleft("C- Enroll")
@@ -128,51 +128,51 @@ def main_menu():
 
 def enroll_menu():
     while True:
-        clrscr();
-        printleft("A - ContRegistration");
-        printleft("B - SeleRegistration");
-        printleft("C - Add Admin");
-        printleft("# - Abort");
+        clrscr()
+        printleft("A - ContRegistration")
+        printleft("B - SeleRegistration")
+        printleft("C - Add Admin")
+        printleft("# - Abort")
         key = getKey()
-        clrscr();
+        clrscr()
         if key == 'A':
-            enroll_cont();
+            enroll_cont()
             return
         elif key == 'B':
-            enroll_sele();
+            enroll_sele()
             return
         elif key == 'C':
-            clrscr();
-            println("Faculty");
-            println("Fingerprint");
-            println("Enrollment");
+            clrscr()
+            println("Faculty")
+            println("Fingerprint")
+            println("Enrollment")
             sleep(1000)
-            enroll_sele();
+            enroll_sele()
             return
         elif key == '#':
             return
         else:
-            println("Invalid Input");
-            sleep(1500);
+            println("Invalid Input")
+            sleep(1500)
 
 def enroll_cont():
-    clrscr();
-    printline("Autonomous");
-    printline("Enrollment");
+    clrscr()
+    printline("Autonomous")
+    printline("Enrollment")
     println("A to Continue")
-    printline("Any Key to Abort");
+    printline("Any Key to Abort")
     key = getKey()
-    clrscr();
+    clrscr()
     if key == 'A':
         classID = get_class()
         studs = get_class_studs(classID)
         index = 0
         while index < len(studs):
-            clrscr();
-            println("Roll Number :" + str(studs[index][1]));
-            println("A- Continue");
-            println("B- Skip    C- Prev");
-            println("Any to Abort");
+            clrscr()
+            println("Roll Number :" + str(studs[index][1]))
+            println("A- Continue")
+            println("B- Skip    C- Prev")
+            println("Any to Abort")
             key = getKey()
             if key == 'A':
                 id = 1
@@ -184,12 +184,12 @@ def enroll_cont():
                         println("Exists")
                         sleep(1000)
                     else:
-                        clrscr();
+                        clrscr()
                         println("PRN:"+str(prn))
                         println("Fingerprint "+str(id))
-                        println("Press A to Continue");
-                        println("Any Key to Skip");
-                        key = getKey():
+                        println("Press A to Continue")
+                        println("Any Key to Skip")
+                        key = getKey()
                         if key == 'A':
 	                    enroll(studs[index][0],id)
                     id = id +1
@@ -199,26 +199,26 @@ def enroll_cont():
                 index = index -2
             else:
                 clrscr()
-                println("Exiting");
-                sleep(500);
+                println("Exiting")
+                sleep(500)
                 return
     else:
         clrscr()
-        printline("Exiting");
-        sleep(500);
+        printline("Exiting")
+        sleep(500)
         return
 
 def enroll_sele():
     while True:
-        clrscr();
+        clrscr()
         println("Selected PRN")
         println("Enrollment")
-        println("Press A to Continue");
-        println("Any Key to Abort");
-        key = getKey();
-        clrscr();
+        println("Press A to Continue")
+        println("Any Key to Abort")
+        key = getKey()
+        clrscr()
         if key == 'A':
-            prn = get_prn();
+            prn = get_prn()
             id = 1
             while id<3:
                 clrscr()
@@ -228,32 +228,32 @@ def enroll_sele():
                     println("Exists")
                     sleep(1000)
                 else:
-                    clrscr();
+                    clrscr()
                     println("PRN:"+str(prn))
                     println("Fingerprint "+str(id))
-                    println("Press A to Continue");
-                    println("Any Key to Skip");
+                    println("Press A to Continue")
+                    println("Any Key to Skip")
                     key = getKey()
                     if key == 'A':
                         enroll(prn,id)
                 id = id +1
         else:
-            clrscr();
-            printline("Exiting");
+            clrscr()
+            printline("Exiting")
             sleep(500)
             return
 
 def faculty_enroll():
     while True:
-        clrscr();
+        clrscr()
         println("Faculty")
         println("Enrollment")
-        println("Press A to Continue");
-        println("Any Key to Abort");
-        key = getKey();
-        clrscr();
+        println("Press A to Continue")
+        println("Any Key to Abort")
+        key = getKey()
+        clrscr()
         if key == 'A':
-            faculty_id = get_faculty_id();
+            faculty_id = get_faculty_id()
             id = 1
             while id<3:
                 clrscr()
@@ -266,8 +266,8 @@ def faculty_enroll():
                     enroll(faculty_id,id)
                 id = id +1
     else:
-        clrscr();
-        printline("Exiting");
+        clrscr()
+        printline("Exiting")
         sleep(500)
         return
 main_menu()
