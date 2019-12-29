@@ -27,20 +27,37 @@ def setup():
         GPIO.setup(RedPin, GPIO.OUT)
         while not fps.open:
             fps.open()
+        fps.setLED(True)
+        sleep(250)
+        fps.setLED(False)
         for j in range(4):
             GPIO.setup(COL[j], GPIO.OUT)
             GPIO.output(COL[j],1)
         for i in range(4):
             GPIO.setup(ROW[i],GPIO.IN, pull_up_down = GPIO.PUD_UP)
-#        beep(4);
-        fps.setLED(True)
+        beep(4);
         return True
     except Exception as e:
         print(e)
         return False
+
 def main_menu():
     clrscr()
     println("Main Menu")
+    sleep(1000)
+    auth_result  = authorization()
+    print 'back in main'
+    print auth_result
+    while not auth_result:
+        clrscr()
+        println("Canceled")
+        sleep(1000)
+        return
+    clrscr()
+    println(str(auth_result[2]))
+    println("Authorized")
+    println("<<>>")
+    sleep(1000)
     clrscr()
     while True:
         clrscr()
@@ -72,6 +89,7 @@ def main_menu():
             enroll_menu()
             return
         elif key == '#':
+            print 'exit main menufunction'
             return
         else:
             println("Invalid Input")
@@ -106,6 +124,9 @@ def enroll_cont():
     clrscr()
     println("Autonomous")
     println("Enrollment")
+    while not fps.open:
+        fps.open()
+    fps.setLED(True)
     println("A to Continue")
     println("Any Key to Abort")
     key = getKey()
@@ -149,6 +170,7 @@ def enroll_cont():
                 clrscr()
                 println("Exiting")
                 sleep(500)
+                fps.setLED(False)
                 return
             index = index+1
         clrscr()
@@ -158,9 +180,16 @@ def enroll_cont():
         clrscr()
         println("Exiting")
         sleep(500)
+        fps.setLED(False)
         return
 
 def enroll_sele():
+    clrscr()
+    println("Selected PRN")
+    println("Enrollment")
+    while not fps.open:
+        fps.open()
+    fps.setLED(True)
     while True:
         clrscr()
         println("Selected PRN")
@@ -193,9 +222,16 @@ def enroll_sele():
             clrscr()
             println("Exiting")
             sleep(500)
+            fps.setLED(False)
             return
 
 def faculty_enroll():
+    clrscr()
+    println("Faculty")
+    println("Enrollment")
+    while not fps.open:
+        fps.open()
+    fps.setLED(True)
     while True:
         clrscr()
         println("Faculty")
@@ -217,31 +253,12 @@ def faculty_enroll():
                 else:
                     enroll(faculty_id,id)
                 id = id +1
-    else:
-        clrscr()
-        printline("Exiting")
-        sleep(500)
-        return
-
-def take_attendance():
-    id = 0
-    while True:
-        clrscr()
-        println("Taking")
-        println("Attendance")
-        println("Press Finger")
-        id = identify()
-        clrscr()
-        if id==200:
-             println("Not")
-             println("Found")
-             println("Try Again")
         else:
-             println(str(id))
-             println("Found")
-             println("Send to DB")
-        println("Waiting 1 sec")
-        sleep(1000)
+            clrscr()
+            println("Exiting")
+            sleep(500)
+            fps.setLED(False)
+            return
 
 def check_template(user_id,template_id):
     try:
@@ -257,10 +274,16 @@ def authorization(schedule_id = 0):
     clrscr()
     println("Authorization")
     println("Required")
+    print 'inside authorization'
+    while not fps.open:
+        print 'fps open'
+        fps.open()
+        print 'fps light'
+    fps.setLED(True)
     println("Press Finger")
     println("# to Cancel")
     faculty_id = 0
-    while True: 
+    while True:
         id = 0
         key = getKeyPress()
         if fps.isPressFinger():
@@ -271,10 +294,15 @@ def authorization(schedule_id = 0):
                         response[0]['Parameter']='200'
                     id = response[0]['Parameter']
                     if 200>id>149:
+                        print id
                         faculty_id = get_map_prn(id)
+                        print "fac" +str(faculty_id)
                         faculty_name = get_fac_name(faculty_id)
+			print faculty_name
                         if not schedule_id == 0:
                             start_lab(schedule_id,faculty_id)
+                        print [True,faculty_id, faculty_name]
+                        fps.setLED(False)
                         return [True,faculty_id, faculty_name]
                     else:
                         clrscr()
@@ -301,16 +329,21 @@ def authorization(schedule_id = 0):
                 println("# to Cancel")
         else:
             if key=='#':
+                fps.setLED(False)
                 return False
             else:
                 pass
 
-def take_attendance(schedule_id, abbr, batch):
+def take_attendance(schedule_id,endtime, abbr, batch):
     clrscr()
     println("Subject :")
     println(str(abbr))
     println("Batch :"+str(batch))
-    while True: 
+    while not fps.open:
+        fps.open()
+    fps.setLED(True)
+    println("Press Finger")
+    while datetime.datetime.now().strftime("%H:%M:%S")<endtime: 
         id = 0
         key = getKeyPress()
         if fps.isPressFinger():
@@ -321,8 +354,13 @@ def take_attendance(schedule_id, abbr, batch):
                         response[0]['Parameter']='200'
                     id = response[0]['Parameter']
                     if 0<id<150:
+                        clrscr()
+                        println("Finger")
+                        println("Found")
+                        println("Inserting Att")
+                        sleep(1000)
                         prn = get_map_prn(id)
-                        insert_attendance(schedule_id,faculty_id)
+                        insert_attendance(schedule_id,prn)
                     else:
                         clrscr()
                         println("Finger")
@@ -333,6 +371,7 @@ def take_attendance(schedule_id, abbr, batch):
                         println("Subject :")
                         println(str(abbr))
                         println("Batch :"+str(batch))
+                        println("Press Finger")
             else:
                 clrscr()
 		println("Finger Capture")
@@ -343,11 +382,19 @@ def take_attendance(schedule_id, abbr, batch):
                 println("Subject :")
                 println(str(abbr))
                 println("Batch :"+str(batch))
+                println("Press Finger")
         else:
+            print 'key pressed'
             if key=='#':
                 main_menu()
+                clrscr()
+                println("Subject :")
+                println(str(abbr))
+                println("Batch :"+str(batch))
+                println("Press Finger")
             else:
                 pass
+    fps.setLED(False)
 
 def get_class_studs(classID):
     studs=[]
@@ -504,7 +551,7 @@ def sync_all():
     clrscr()
     println("Syncing DB")
     println("<<>>")
-    if check_conn:
+    if check_conn():
         sync_timetable(1,1)
         sync_slots()
         sync_class()
@@ -961,12 +1008,7 @@ def delete_template(user_id, template_id):
 def set_stud_templates(studs):
     id=0
     try:
-        while id<=149:
-            fps.deleteId(id)
-            id = id+1
-        id=0
         print(studs)
-        clear_map()
         for x in studs:
             template_id=1
             print(x)
@@ -983,12 +1025,6 @@ def set_stud_templates(studs):
 def set_fac_templates():
     id=199
     try:
-        print('deleting')
-        while id>149:
-            fps.deleteId(id)
-            id = id-1
-        id=199
-        print('deleted')
         with open('./docs/fac-det.txt', "r") as fp:
             print('file opened')
             for x in fp.readlines():
@@ -998,7 +1034,7 @@ def set_fac_templates():
                 while template_id<3:
                     if set_template(str(x[0])+"-"+str(template_id),id):
                         print set_map_prn(id,x[0])
-                        print id
+                        print str(id)+","+str(x[0])
                         id = id-1
                     template_id=template_id+1
         return True
@@ -1162,6 +1198,7 @@ def enroll_main(id):
 #---------------Utilities---------------------------------------
 
 def get_timeId(time=datetime.datetime.now().strftime("%H:%M:%S")):
+    print 'time id function'
     try:
         myconn = pymysql.connect(host,user,password,database)
         cur = myconn.cursor() 
@@ -1409,10 +1446,10 @@ def get_prn():
             Roll = str(Roll) + str(key)
 
 def insert_attendance(schedule_id,prn):
+    time = datetime.datetime.now().strftime("%H:%M:%S")
     try:
         myconn = pymysql.connect(host,user,password,database)
         cur = myconn.cursor()
-        time = datetime.datetime.now().strftime("%H:%M:%S")
         timeid=get_timeId(time)
         if not timeid==0:
             sql="insert into `attendance` values(null,'"+str(prn)+"',"+str(schedule_id)+","+str(timeid)+")"    
@@ -1436,11 +1473,15 @@ def insert_attendance(schedule_id,prn):
         return False
 
 def start_lab(schedule_id, faculty_id):
+    print 'starting lab'
+    time = datetime.datetime.now().strftime("%H:%M:%S")
     try:
         myconn = pymysql.connect(host,user,password,database)
         cur = myconn.cursor()
-        time = datetime.datetime.now().strftime("%H:%M:%S")
+        print 'define time'
+        print 'defined time'
         timeid=get_timeId(time)
+        print timeid
         if not timeid==0:
             sql="insert into `facultytimetable` values("+str(schedule_id)+","+str(faculty_id)+")"
             cur.execute(sql)
@@ -1490,6 +1531,7 @@ def get_map_prn(id):
         return False
 
 def set_map_prn(id,user_id):
+    print('set map'+str(id)+" - "+str(user_id))
     try:
         map = json.load(open("./docs/map.json"))
         map[str(id)]=user_id
@@ -1501,6 +1543,7 @@ def set_map_prn(id,user_id):
         return False
 
 def clear_map():
+    print('clear map')
     try:
         map = json.load(open("./docs/map.json"))
         id = 0;
@@ -1543,8 +1586,8 @@ def get_fac_name(faculty_id):
             for x in fp.readlines():
                 x = x.split(",")
                 print x[0]
-                print faculty_id
-		if str(x[0])==str(faculty_id):
+                print x[1]
+		if x[0]==str(faculty_id):
 	            x[1]=x[1].replace("\n","")
 		    return x[1]
     except Exception as e:
@@ -1644,14 +1687,17 @@ def getKey():
         return False
 
 def check_conn():
+    print 'checking connection'
     try:
         myconn = pymysql.connect(host,user,password,database)
         cur = myconn.cursor()
-        sql="select * from class"           
-	cur.execute(sql)
-        return True
+        sql="Select * from class"
+        cur.execute(sql)
     except Exception as e:
+        print 'connection exception'
+        print e
         return False
+    return True
 
 #-------------------------Lighting------------------------------------
 
