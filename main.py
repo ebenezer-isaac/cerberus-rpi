@@ -17,17 +17,19 @@ println('Attndance Initiative')
 setup()
 sleep(500)
 clrscr()
-sync_all()
+print sync_timetable(1,2020)
+#sync_all()
 #upload_template('2019033800135534','1',14,6)
 #upload_template('2019033800135534','2',14,6)
-#enroll('2019033800100921','1')
-"""println("Setting")
+#enroll('2019033800100983','2')
+clrscr()
+println("Setting")
 println("Up")
 println("Faculty")
 println("Fingerprints")
-delete_all()
-set_fac_templates()
-
+#delete_all()
+#set_fac_templates()
+print 'hello'
 try:
     while True:
         sync_all()
@@ -72,9 +74,9 @@ try:
 	    println("Setting")
 	    println("Up")
 	    println("Fingerprints")
-	    delete_all()
-	    set_fac_templates()
-	    set_stud_templates(studs)
+#	    delete_all()
+#	    set_fac_templates()
+#	    set_stud_templates(studs)
 	    auth_result  = authorization(next_schedule[1][0])
             print 'back in main'
             print auth_result
@@ -105,5 +107,3 @@ try:
 except Exception as e:
     print(e)
 print 'show has ended'
-
-"""

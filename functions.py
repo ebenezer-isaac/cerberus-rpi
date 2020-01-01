@@ -57,6 +57,7 @@ def main_menu():
     println(str(auth_result[2]))
     println("Authorized")
     println("<<>>")
+    blinkg(3)
     sleep(1000)
     clrscr()
     while True:
@@ -299,6 +300,10 @@ def authorization(schedule_id = 0):
                         print "fac" +str(faculty_id)
                         faculty_name = get_fac_name(faculty_id)
 			print faculty_name
+                        clrscr()
+                        println("Finger")
+                        println("Found")
+                        println("Connecting DB")
                         if not schedule_id == 0:
                             start_lab(schedule_id,faculty_id)
                         print [True,faculty_id, faculty_name]
@@ -310,6 +315,7 @@ def authorization(schedule_id = 0):
                         println("Required")
                         println("to")
                         println("Authorize")
+                        blinkr(3)
                         sleep(1000)
                         clrscr()
                         println("Authorization")
@@ -321,6 +327,7 @@ def authorization(schedule_id = 0):
 		println("Finger Capture")
 		println("Failed")
 		println("Try Again")
+                blinkr(3)
                 sleep(1000)
                 clrscr()
                 println("Authorization")
@@ -356,16 +363,22 @@ def take_attendance(schedule_id,endtime, abbr, batch):
                     if 0<id<150:
                         clrscr()
                         println("Finger")
-                        println("Found")
-                        println("Inserting Att")
+                        println("Identified")
+                        blinkg(3)
                         sleep(1000)
                         prn = get_map_prn(id)
+                        clrscr()
+                        println("PRN:"+str(prn))
+                        println("")
+                        println("Inserting Att")
+                        sleep(1000)
                         insert_attendance(schedule_id,prn)
                     else:
                         clrscr()
                         println("Finger")
                         println("Not Found")
                         println("Try Again")
+                        blinkr(3)
                         sleep(1000)
                         clrscr()
                         println("Subject :")
@@ -384,7 +397,6 @@ def take_attendance(schedule_id,endtime, abbr, batch):
                 println("Batch :"+str(batch))
                 println("Press Finger")
         else:
-            print 'key pressed'
             if key=='#':
                 main_menu()
                 clrscr()
@@ -392,6 +404,9 @@ def take_attendance(schedule_id,endtime, abbr, batch):
                 println(str(abbr))
                 println("Batch :"+str(batch))
                 println("Press Finger")
+                while not fps.open:
+                    fps.open()
+                fps.setLED(True)
             else:
                 pass
     fps.setLED(False)
@@ -490,6 +505,9 @@ def get_next_schedule():
         week=datetime.datetime.now().isocalendar()[1]
         year=datetime.datetime.now().year
         dayid=datetime.datetime.now().weekday()+1
+#        week = 1
+#        year = 2020
+#        dayid = 3
         today=[]
         try:
             with open("./timetables/timetable-"+str(week)+"-"+str(year)+".txt", "r") as fp:
@@ -507,6 +525,7 @@ def get_next_schedule():
         else:
             today.sort()
             time=datetime.datetime.now().strftime("%H:%M:%S")
+#            time = '13:01:00'
             for x in today:
                 if x[1]<=time<=x[2]:
                     return [0,x]
@@ -663,6 +682,8 @@ def sync_timetable(week=0,year=0):
         elif week==1 and year==1:
             week= datetime.datetime.now().isocalendar()[1]
             year = datetime.datetime.now().year
+            print week
+            print year
             try:
                 sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
                 cur.execute(sql)
@@ -685,6 +706,7 @@ def sync_timetable(week=0,year=0):
                 print(e)
                 return False
         else:
+            print 'manual'
             try:
                 sql = "select timetable.scheduleID, timetable.dayID, slot.startTime , slot.endTime, timetable.subjectID, timetable.batchID, subject.Abbreviation from timetable inner join slot on timetable.slotID = slot.slotID inner join subject on timetable.subjectID = subject.subjectID where timetable.labID=1 and timetable.weekID="+str(get_weekId(week,year))+"  ORDER BY `timetable`.`dayID` ASC, slot.startTime ASC"
                 cur.execute(sql)
@@ -1634,9 +1656,11 @@ def println(text):
     lcd.println(text)
 
 def printline(text,line):
+    print "lcd :"+str(text)+":"
     lcd.println(text,line)
 
 def printleft(text):
+    print "lcd :"+str(text)+":"
     lcd.println(text)
 
 def printIP():
@@ -1644,6 +1668,7 @@ def printIP():
     println(ip)
 
 def printleftline(text,line):
+    print "lcd :"+str(text)+":"
     lcd.println(text,line)
 
 def clrscr():
