@@ -44,6 +44,8 @@ def setup():
 def main_menu():
     clrscr()
     println("Main Menu")
+    println("Setting up")
+    println("Fingerprints")
     sleep(1000)
     auth_result  = authorization()
     print 'back in main'
@@ -271,18 +273,29 @@ def check_template(user_id,template_id):
         print e
         return False
 
-def authorization(schedule_id = 0):
+def authorization(schedule_id = 0, type =0):
+    clrscr()
+    println("Setting Up")
+    println("Student")
+    println("Fingerprints")
+    delete_all()
+    set_fac_templates()
     clrscr()
     println("Authorization")
-    println("Required")
+    if type==1:
+        println("Required for Lab")
+        println("Press Finger")
+        println("# for Menu")
+    else:
+        println("Required for Menu")
+        println("Press Finger")
+        println("# to Cancel")
     print 'inside authorization'
     while not fps.open:
         print 'fps open'
         fps.open()
         print 'fps light'
     fps.setLED(True)
-    println("Press Finger")
-    println("# to Cancel")
     faculty_id = 0
     while True:
         id = 0
@@ -319,9 +332,14 @@ def authorization(schedule_id = 0):
                         sleep(1000)
                         clrscr()
                         println("Authorization")
-                        println("Required")
-                        println("Press Finger")
-                        println("# to Cancel")
+		        if type==1:
+    		            println("Required for Lab")
+		            println("Press Finger")
+		            println("# for Menu")
+		        else:
+		            println("Required for Menu")
+                            println("Press Finger")
+                            println("# to Cancel")
             else:
                 clrscr()
 		println("Finger Capture")
@@ -331,9 +349,14 @@ def authorization(schedule_id = 0):
                 sleep(1000)
                 clrscr()
                 println("Authorization")
-                println("Required")
-                println("Press Finger")
-                println("# to Cancel")
+	        if type==1:
+	            println("Required for Lab")
+                    println("Press Finger")
+                    println("# for Menu")
+	        else:
+                    println("Required for Menu")
+                    println("Press Finger")
+                    println("# to Cancel")
         else:
             if key=='#':
                 fps.setLED(False)
@@ -341,7 +364,13 @@ def authorization(schedule_id = 0):
             else:
                 pass
 
-def take_attendance(schedule_id,endtime, abbr, batch):
+def take_attendance(schedule_id,endtime, abbr, batch,studs):
+    clrscr()
+    println("Setting")
+    println("Up")
+    println("Fingerprints")
+    delete_all()
+    set_stud_templates(studs)
     clrscr()
     println("Subject :")
     println(str(abbr))
@@ -579,6 +608,7 @@ def sync_all():
         sync_stud_sub()
         sync_attendance()
         sync_templates()
+        print 'outside sync function'
         clrscr()
         println("Sync Success")
         println("Connection")
@@ -947,8 +977,11 @@ def sync_templates ():
                         else:
                             download_template(user_id,template_id)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
 	    print('execute error here')
             print e
+            print 'just printed error'
             return False
         print('template sync over')
         return True
@@ -1029,12 +1062,23 @@ def delete_template(user_id, template_id):
 
 def set_stud_templates(studs):
     id=0
+    count = 0
+    text = ""
     try:
         print(studs)
         for x in studs:
             template_id=1
             print(x)
             while template_id<3:
+                text = ""
+                if count==20:
+                    count=0
+                print count
+                while len(text)<count:
+                    text=text+"."
+                print text
+                count=count+1
+                printleftline(text,4)
                 if set_template(str(x)+"-"+str(template_id),id):
                     set_map_prn(id,x)
                     id = id+1
@@ -1046,6 +1090,7 @@ def set_stud_templates(studs):
     
 def set_fac_templates():
     id=199
+    count=0
     try:
         with open('./docs/fac-det.txt', "r") as fp:
             print('file opened')
@@ -1054,6 +1099,15 @@ def set_fac_templates():
                 x = x.split(",")
                 template_id=1
                 while template_id<3:
+                    text = ""
+                    if count==20:
+                        count=0
+                    print count
+                    while len(text)<count:
+                        text=text+"."
+                    print text
+                    count=count+1
+                    printleftline(text,4)
                     if set_template(str(x[0])+"-"+str(template_id),id):
                         print set_map_prn(id,x[0])
                         print str(id)+","+str(x[0])
@@ -1656,6 +1710,16 @@ def println(text):
     lcd.println(text)
 
 def printline(text,line):
+    length = len(text);
+    indent = ((20 - length) / 2);
+    i = 0
+    while i < indent:
+        text = " " + text;
+        i=i+1
+    i = 0 
+    while len(text) < 20:
+        text = text + " ";
+        i = i+1
     print "lcd :"+str(text)+":"
     lcd.println(text,line)
 
