@@ -138,7 +138,7 @@ def enroll_cont():
         classID = get_class()
         studs = get_class_studs(classID)
         index = 0
-        while index < len(studs):
+        while -1< index < len(studs):
             clrscr()
             println("Roll Number :" + str(studs[index][1]))
             println("A- Continue")
@@ -820,7 +820,7 @@ def sync_stud_det():
             rpi_studs.append(str(x[2]))
         db_studs=[]
         try:
-            sql = "select  rollcall.classID, rollcall.rollNo, student.prn from student inner join rollcall on student.PRN = rollcall.PRN"
+            sql = "select  rollcall.classID, rollcall.rollNo, student.prn from student inner join rollcall on student.PRN = rollcall.PRN order by LENGTH(rollcall.rollNo),rollcall.rollNo"
             cur.execute(sql)
             result = cur.fetchall()
             if result:
